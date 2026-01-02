@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kriacy - Who Am I</title>
+    <link rel="stylesheet" href="whoami.css">
+</head>
+
+<body>
+    <div class="whoami-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="icons/icon.svg" alt="Kriacy" width="40" height="40">
+                    <div class="logo-text-container">
+                        <span class="logo-text">Kriacy</span>
+                        <span class="logo-subtitle">Who Am I</span>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <span class="protection-status" id="protectionStatus">
+                        <span class="status-indicator active"></span>
+                        <span class="status-text">Protected</span>
+                    </span>
+                    <button class="btn btn-outline" id="refreshBtn">
+                        <img src="icons/toolbar/dice.svg" alt="" width="16" height="16">
+                        Refresh
+                    </button>
+                    <a href="options.html" class="btn btn-primary">
+                        <img src="icons/toolbar/settings.svg" alt="" width="16" height="16">
+                        Settings
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Summary Hero -->
+            <section class="hero-section">
+                <div class="hero-card">
+                    <div class="hero-icon">🎭</div>
+                    <div class="hero-content">
+                        <h1>Your Digital Identity</h1>
+                        <p>This is how websites see you with Kriacy protection enabled. All values shown are the
+                            spoofed/modified versions.</p>
+                    </div>
+                    <div class="fingerprint-hash">
+                        <span class="hash-label">Fingerprint Hash</span>
+                        <code id="fingerprintHash">Loading...</code>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Grid Layout -->
+            <div class="cards-grid">
+                <!-- Browser Identity Card -->
+                <div class="card card-large">
+                    <div class="card-header">
+                        <img src="icons/toolbar/compass.svg" alt="" width="20" height="20">
+                        <h3>Browser Identity</h3>
+                        <span class="status-badge active">Modified</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-row">
+                            <span class="info-label">User Agent</span>
+                            <code class="info-value code-block" id="userAgent">Loading...</code>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Platform</span>
+                            <span class="info-value" id="platform">Loading...</span>
+                        </div>
+                        <div class="info-row-group">
+                            <div class="info-row">
+                                <span class="info-label">Language</span>
+                                <span class="info-value" id="language">Loading...</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Languages</span>
+                                <span class="info-value" id="languages">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hardware Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <img src="icons/toolbar/monitor.svg" alt="" width="20" height="20">
+                        <h3>Hardware</h3>
+                        <span class="status-badge active">Spoofed</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="stat-row">
+                            <div class="stat-item">
+                                <span class="stat-value" id="cpuCores">-</span>
+                                <span class="stat-label">CPU Cores</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value" id="memory">-</span>
+                                <span class="stat-label">Memory (GB)</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value" id="touchPoints">-</span>
+                                <span class="stat-label">Touch Points</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Screen Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <img src="icons/toolbar/image.svg" alt="" width="20" height="20">
+                        <h3>Screen</h3>
+                        <span class="status-badge active">Modified</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="stat-row">
+                            <div class="stat-item stat-large">
+                                <span class="stat-value" id="resolution">-</span>
+                                <span class="stat-label">Resolution</span>
+                            </div>
+                        </div>
+                        <div class="stat-row">
+                            <div class="stat-item">
+                                <span class="stat-value" id="colorDepth">-</span>
+                                <span class="stat-label">Color Depth</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value" id="pixelRatio">-</span>
+                                <span class="stat-label">Pixel Ratio</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WebGL Card -->
+                <div class="card card-large">
+                    <div class="card-header">
+                        <img src="icons/toolbar/palette.svg" alt="" width="20" height="20">
+                        <h3>Graphics (WebGL)</h3>
+                        <span class="status-badge active" id="webglStatus">Spoofed</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-row">
+                            <span class="info-label">GPU Vendor</span>
+                            <span class="info-value" id="gpuVendor">Loading...</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">GPU Renderer</span>
+                            <code class="info-value code-block" id="gpuRenderer">Loading...</code>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timezone & Location Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <img src="icons/toolbar/location.svg" alt="" width="20" height="20">
+                        <h3>Timezone & Location</h3>
+                        <span class="status-badge" id="locationStatus">Check</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-row">
+                            <span class="info-label">Timezone</span>
+                            <span class="info-value" id="timezone">Loading...</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Offset</span>
+                            <span class="info-value" id="timezoneOffset">Loading...</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Geolocation</span>
+                            <span class="info-value" id="geolocation">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Canvas & Audio Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <img src="icons/toolbar/palette.svg" alt="" width="20" height="20">
+                        <h3>Canvas & Audio</h3>
+                        <span class="status-badge" id="canvasStatus">Check</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-row">
+                            <span class="info-label">Canvas Protection</span>
+                            <span class="info-value" id="canvasProtection">Loading...</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Noise Level</span>
+                            <span class="info-value" id="canvasNoise">Loading...</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Audio Protection</span>
+                            <span class="info-value" id="audioProtection">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WebRTC Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <img src="icons/toolbar/globe.svg" alt="" width="20" height="20">
+                        <h3>WebRTC</h3>
+                        <span class="status-badge" id="webrtcStatus">Check</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-row">
+                            <span class="info-label">Protection Mode</span>
+                            <span class="info-value" id="webrtcMode">Loading...</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">IP Leak Protection</span>
+                            <span class="info-value" id="webrtcLeak">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Privacy Signals Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <img src="icons/toolbar/lock.svg" alt="" width="20" height="20">
+                        <h3>Privacy Signals</h3>
+                        <span class="status-badge active">Active</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="privacy-signals">
+                            <div class="signal-item" id="dntSignal">
+                                <span class="signal-dot"></span>
+                                <span>Do Not Track</span>
+                            </div>
+                            <div class="signal-item" id="gpcSignal">
+                                <span class="signal-dot"></span>
+                                <span>Global Privacy Control</span>
+                            </div>
+                            <div class="signal-item" id="visibilitySignal">
+                                <span class="signal-dot"></span>
+                                <span>Visibility Spoofing</span>
+                            </div>
+                            <div class="signal-item" id="windowNameSignal">
+                                <span class="signal-dot"></span>
+                                <span>Window.name Protection</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Protections Summary -->
+            <section class="protections-section">
+                <h2>Active Protections</h2>
+                <div class="protections-grid" id="protectionsGrid">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Raw Data Section -->
+            <section class="raw-data-section">
+                <div class="card">
+                    <div class="card-header">
+                        <img src="icons/toolbar/wrench.svg" alt="" width="20" height="20">
+                        <h3>Raw Settings Data</h3>
+                        <button class="btn btn-sm btn-icon" id="copyRawBtn">
+                            Copy JSON
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <pre class="json-display" id="rawSettingsJson">Loading...</pre>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Kriacy • Your privacy, protected.</p>
+        </footer>
+    </div>
+
+    <script src="whoami.js"></script>
+</body>
+
+</html>

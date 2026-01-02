@@ -17,7 +17,7 @@
                     <img src="icons/icon.svg" alt="Kriacy" width="32" height="32">
                     <span class="logo-text">Kriacy</span>
                 </div>
-                <span class="version">v1.0.10</span>
+                <span class="version">v1.1.0</span>
             </div>
 
             <nav class="sidebar-nav">
@@ -56,6 +56,16 @@
             </nav>
 
             <div class="sidebar-footer">
+                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                    <a href="whoami.html" class="btn btn-outline" style="flex: 1; justify-content: center;"
+                        title="Who Am I">
+                        🎭
+                    </a>
+                    <a href="logs.html" class="btn btn-outline" style="flex: 1; justify-content: center;"
+                        title="View Logs">
+                        📋
+                    </a>
+                </div>
                 <button class="btn btn-randomize-all" id="randomizeAllBtn">
                     <img src="icons/toolbar/dice.svg" alt="" width="16" height="16"> Randomize All
                 </button>
@@ -145,8 +155,10 @@
                         <img src="icons/toolbar/lightbulb.svg" alt="" class="info-icon" width="24" height="24">
                         <div class="info-content">
                             <h4>Session Rotating Fingerprints</h4>
-                            <p>Kriacy automatically generates unique fingerprints for each browser session to prevent
-                                tracking across visits. Each time you restart your browser, you'll have a new digital
+                            <p>Kriacy automatically generates unique fingerprints for each browser session to
+                                prevent
+                                tracking across visits. Each time you restart your browser, you'll have a new
+                                digital
                                 identity.</p>
                         </div>
                     </div>
@@ -218,7 +230,8 @@
                         <div class="setting-row">
                             <div class="setting-info">
                                 <label>Noise Level</label>
-                                <p class="setting-desc">Amount of noise to add (higher = more protection but may affect
+                                <p class="setting-desc">Amount of noise to add (higher = more protection but may
+                                    affect
                                     visuals)</p>
                             </div>
                             <div class="range-input">
@@ -237,7 +250,8 @@
                         <div class="setting-row">
                             <div class="setting-info">
                                 <label>Enable Audio Protection</label>
-                                <p class="setting-desc">Adds noise to AudioContext API to prevent audio fingerprinting
+                                <p class="setting-desc">Adds noise to AudioContext API to prevent audio
+                                    fingerprinting
                                 </p>
                             </div>
                             <label class="switch">
@@ -669,7 +683,8 @@
                         <div class="setting-row">
                             <div class="setting-info">
                                 <label>Math Fingerprinting Protection</label>
-                                <p class="setting-desc">Adds imperceptible noise to Math functions (sinh, cosh, etc.)
+                                <p class="setting-desc">Adds imperceptible noise to Math functions (sinh, cosh,
+                                    etc.)
                                 </p>
                             </div>
                             <label class="switch">
