@@ -10,7 +10,7 @@ import { initStealthProtections, finalizeWebGLStealth } from './protections/stea
 import { initWorkerProtection, setGPUProfile, setWorkerSettings } from './protections/worker-inject';
 
 import { initSettingsListeners, getFingerprintSeed, settings } from './core/state';
-import { initCanvasProtection, initClientRectsProtection } from './protections/canvas';
+import { initCanvasProtection, initClientRectsProtection, initSVGRectsProtection } from './protections/canvas';
 import { initAudioProtection } from './protections/audio';
 import { initWebGLProtection } from './protections/webgl';
 import { initWebRTCProtection } from './protections/webrtc';
@@ -77,9 +77,10 @@ import { initTextRenderingProtection } from './protections/text-rendering';
     // Initialize settings listeners first
     initSettingsListeners();
 
-    // Canvas and Client Rects
+    // Canvas, Client Rects, and SVG Rects
     initCanvasProtection();
     initClientRectsProtection();
+    initSVGRectsProtection();
 
     // Audio
     initAudioProtection();

@@ -61,19 +61,16 @@ export function modifyImageData(imageData: ImageData): ImageData {
 
 /**
  * Apply noise directly to a dataURL string by modifying base64 data
- * This is more reliable than trying to use a temp canvas
  */
 function modifyDataURL(dataURL: string): string {
     const seed = getFingerprintSeed();
 
-    // Find the base64 data part after the comma
     const commaIndex = dataURL.indexOf(',');
     if (commaIndex === -1) return dataURL;
 
     const header = dataURL.substring(0, commaIndex + 1);
     const base64Data = dataURL.substring(commaIndex + 1);
 
-    // Decode, modify, re-encode
     try {
         const binaryString = atob(base64Data);
         const bytes = new Uint8Array(binaryString.length);
@@ -81,14 +78,12 @@ function modifyDataURL(dataURL: string): string {
             bytes[i] = binaryString.charCodeAt(i);
         }
 
-        // Modify some bytes based on seed (skip PNG header - first 8 bytes)
         const noiseRandom = mulberry32(seed);
         for (let i = 100; i < Math.min(bytes.length, 500); i++) {
             const noise = Math.floor(noiseRandom() * 3) - 1;
             bytes[i] = Math.max(0, Math.min(255, bytes[i] + noise));
         }
 
-        // Re-encode to base64
         let newBinaryString = '';
         for (let i = 0; i < bytes.length; i++) {
             newBinaryString += String.fromCharCode(bytes[i]);
@@ -96,19 +91,7 @@ function modifyDataURL(dataURL: string): string {
 
         return header + btoa(newBinaryString);
     } catch (e) {
-        // If anything fails, return original
         return dataURL;
-    }
-}
-
-/**
- * Get 2D context safely
- */
-function getSafe2DContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D | null {
-    try {
-        return canvas.getContext('2d', { willReadFrequently: true });
-    } catch {
-        return null;
     }
 }
 
@@ -116,7 +99,6 @@ function getSafe2DContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D |
  * Initialize canvas protection
  */
 export function initCanvasProtection(): void {
-    // Override toDataURL
     HTMLCanvasElement.prototype.toDataURL = function (type?: string, quality?: any): string {
         if (inToDataURL) {
             return originalToDataURL.call(this, type, quality);
@@ -132,10 +114,7 @@ export function initCanvasProtection(): void {
                 return originalToDataURL.call(this, type, quality);
             }
 
-            // Get the original result
             const originalResult = originalToDataURL.call(this, type, quality);
-
-            // Apply noise by modifying the base64 data directly
             logSpoofAccess('canvas', 'toDataURL', `${this.width}x${this.height}`);
             const modifiedResult = modifyDataURL(originalResult);
 
@@ -148,7 +127,6 @@ export function initCanvasProtection(): void {
         }
     };
 
-    // Override toBlob
     HTMLCanvasElement.prototype.toBlob = function (
         callback: BlobCallback,
         type?: string,
@@ -168,18 +146,15 @@ export function initCanvasProtection(): void {
                 return originalToBlob.call(this, callback, type, quality);
             }
 
-            // Get dataURL, modify it, convert to blob
             const dataURL = originalToDataURL.call(this, type, quality);
             const modifiedDataURL = modifyDataURL(dataURL);
 
             logSpoofAccess('canvas', 'toBlob', `${this.width}x${this.height}`);
 
-            // Convert modified dataURL to blob
             fetch(modifiedDataURL)
                 .then(res => res.blob())
                 .then(blob => callback(blob))
                 .catch(() => {
-                    // Fallback to original
                     originalToBlob.call(this, callback, type, quality);
                 });
         } finally {
@@ -187,7 +162,6 @@ export function initCanvasProtection(): void {
         }
     };
 
-    // Override getImageData
     CanvasRenderingContext2D.prototype.getImageData = function (
         sx: number, sy: number, sw: number, sh: number,
         settings2?: ImageDataSettings
@@ -210,7 +184,6 @@ export function initCanvasProtection(): void {
         }
     };
 
-    // OffscreenCanvas spoofing
     if (typeof OffscreenCanvas !== 'undefined') {
         const originalOffscreenToBlob = OffscreenCanvas.prototype.convertToBlob;
         let inOffscreenToBlob = false;
@@ -237,7 +210,6 @@ export function initCanvasProtection(): void {
             return originalOffscreenToBlob.call(this, options);
         };
 
-        // OffscreenCanvasRenderingContext2D.getImageData
         try {
             if (typeof OffscreenCanvasRenderingContext2D !== 'undefined') {
                 const originalOffscreenGetImageData = OffscreenCanvasRenderingContext2D.prototype.getImageData;
@@ -274,9 +246,7 @@ export function initClientRectsProtection(): void {
 
     Element.prototype.getBoundingClientRect = function (): DOMRect {
         const rect = originalGetBoundingClientRect.call(this);
-
         if (!settings.canvas?.enabled) return rect;
-
         const noise = RECT_NOISE;
         return new DOMRect(
             rect.x + noise,
@@ -288,12 +258,9 @@ export function initClientRectsProtection(): void {
 
     Element.prototype.getClientRects = function (): DOMRectList {
         const rects = originalGetClientRects.call(this);
-
         if (!settings.canvas?.enabled) return rects;
-
         const noise = RECT_NOISE;
         const modifiedRects: DOMRect[] = [];
-
         for (let i = 0; i < rects.length; i++) {
             const rect = rects[i];
             modifiedRects.push(new DOMRect(
@@ -303,7 +270,135 @@ export function initClientRectsProtection(): void {
                 rect.height + noise
             ));
         }
-
         return modifiedRects as unknown as DOMRectList;
     };
+
+    const originalRangeGetBoundingClientRect = Range.prototype.getBoundingClientRect;
+    const originalRangeGetClientRects = Range.prototype.getClientRects;
+
+    Range.prototype.getBoundingClientRect = function (): DOMRect {
+        const rect = originalRangeGetBoundingClientRect.call(this);
+        if (!settings.canvas?.enabled) return rect;
+        const noise = RECT_NOISE;
+        return new DOMRect(
+            rect.x + noise,
+            rect.y + noise,
+            rect.width + noise,
+            rect.height + noise
+        );
+    };
+
+    Range.prototype.getClientRects = function (): DOMRectList {
+        const rects = originalRangeGetClientRects.call(this);
+        if (!settings.canvas?.enabled) return rects;
+        const noise = RECT_NOISE;
+        const modifiedRects: DOMRect[] = [];
+        for (let i = 0; i < rects.length; i++) {
+            const rect = rects[i];
+            modifiedRects.push(new DOMRect(
+                rect.x + noise,
+                rect.y + noise,
+                rect.width + noise,
+                rect.height + noise
+            ));
+        }
+        return modifiedRects as unknown as DOMRectList;
+    };
+}
+
+/**
+ * Initialize SVG-specific rect protection
+ */
+export function initSVGRectsProtection(): void {
+    const noise = RECT_NOISE;
+
+    if (typeof SVGGraphicsElement !== 'undefined' && SVGGraphicsElement.prototype.getBBox) {
+        const originalGetBBox = SVGGraphicsElement.prototype.getBBox;
+        SVGGraphicsElement.prototype.getBBox = function (options?: SVGBoundingBoxOptions): DOMRect {
+            const rect = originalGetBBox.call(this, options);
+            if (!settings.canvas?.enabled) return rect;
+            return new DOMRect(
+                rect.x + noise,
+                rect.y + noise,
+                rect.width + noise,
+                rect.height + noise
+            );
+        };
+        logSpoofAccess('svg', 'getBBox', 'protection initialized');
+    }
+
+    if (typeof SVGTextContentElement !== 'undefined') {
+        if (SVGTextContentElement.prototype.getComputedTextLength) {
+            const originalGetComputedTextLength = SVGTextContentElement.prototype.getComputedTextLength;
+            SVGTextContentElement.prototype.getComputedTextLength = function (): number {
+                const length = originalGetComputedTextLength.call(this);
+                if (!settings.canvas?.enabled) return length;
+                return length + noise;
+            };
+            logSpoofAccess('svg', 'getComputedTextLength', 'protection initialized');
+        }
+
+        if (SVGTextContentElement.prototype.getSubStringLength) {
+            const originalGetSubStringLength = SVGTextContentElement.prototype.getSubStringLength;
+            SVGTextContentElement.prototype.getSubStringLength = function (charnum: number, nchars: number): number {
+                const length = originalGetSubStringLength.call(this, charnum, nchars);
+                if (!settings.canvas?.enabled) return length;
+                return length + noise;
+            };
+            logSpoofAccess('svg', 'getSubStringLength', 'protection initialized');
+        }
+
+        if (SVGTextContentElement.prototype.getExtentOfChar) {
+            const originalGetExtentOfChar = SVGTextContentElement.prototype.getExtentOfChar;
+            SVGTextContentElement.prototype.getExtentOfChar = function (charnum: number): DOMRect {
+                const rect = originalGetExtentOfChar.call(this, charnum);
+                if (!settings.canvas?.enabled) return rect;
+                return new DOMRect(
+                    rect.x + noise,
+                    rect.y + noise,
+                    rect.width + noise,
+                    rect.height + noise
+                );
+            };
+            logSpoofAccess('svg', 'getExtentOfChar', 'protection initialized');
+        }
+
+        if (SVGTextContentElement.prototype.getStartPositionOfChar) {
+            const originalGetStartPositionOfChar = SVGTextContentElement.prototype.getStartPositionOfChar;
+            SVGTextContentElement.prototype.getStartPositionOfChar = function (charnum: number): DOMPoint {
+                const point = originalGetStartPositionOfChar.call(this, charnum);
+                if (!settings.canvas?.enabled) return point;
+                return new DOMPoint(point.x + noise, point.y + noise, point.z, point.w);
+            };
+        }
+
+        if (SVGTextContentElement.prototype.getEndPositionOfChar) {
+            const originalGetEndPositionOfChar = SVGTextContentElement.prototype.getEndPositionOfChar;
+            SVGTextContentElement.prototype.getEndPositionOfChar = function (charnum: number): DOMPoint {
+                const point = originalGetEndPositionOfChar.call(this, charnum);
+                if (!settings.canvas?.enabled) return point;
+                return new DOMPoint(point.x + noise, point.y + noise, point.z, point.w);
+            };
+        }
+
+        if (SVGTextContentElement.prototype.getRotationOfChar) {
+            const originalGetRotationOfChar = SVGTextContentElement.prototype.getRotationOfChar;
+            SVGTextContentElement.prototype.getRotationOfChar = function (charnum: number): number {
+                const rotation = originalGetRotationOfChar.call(this, charnum);
+                if (!settings.canvas?.enabled) return rotation;
+                return rotation + (noise * 0.01);
+            };
+        }
+    }
+
+    if (typeof SVGSVGElement !== 'undefined' && SVGSVGElement.prototype.createSVGRect) {
+        const originalCreateSVGRect = SVGSVGElement.prototype.createSVGRect;
+        SVGSVGElement.prototype.createSVGRect = function (): DOMRect {
+            const rect = originalCreateSVGRect.call(this);
+            if (!settings.canvas?.enabled) return rect;
+            rect.x = noise;
+            rect.y = noise;
+            return rect;
+        };
+    }
 }

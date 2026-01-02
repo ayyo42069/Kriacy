@@ -185,6 +185,32 @@ importScripts('${originalUrl}');
 }
 
 /**
+ * Check if blob URLs are likely blocked by CSP for workers
+ * We detect this by checking the CSP meta tags or by caching previous failures
+ */
+let blobWorkersBlocked = false;
+
+function checkCSPForBlobWorkers(): boolean {
+    if (blobWorkersBlocked) return true;
+
+    try {
+        // Check for CSP meta tags that might block blob workers
+        const cspMetas = document.querySelectorAll('meta[http-equiv="Content-Security-Policy"]');
+        for (const meta of cspMetas) {
+            const content = meta.getAttribute('content') || '';
+            // If there's a worker-src directive that doesn't include blob:, workers might be blocked
+            if (content.includes('worker-src') && !content.includes('blob:')) {
+                blobWorkersBlocked = true;
+                return true;
+            }
+        }
+    } catch (e) {
+        // Ignore errors during CSP check
+    }
+    return false;
+}
+
+/**
  * Intercept Worker creation to inject spoofing code
  */
 export function initWorkerInterception(): void {
@@ -195,6 +221,11 @@ export function initWorkerInterception(): void {
 
         // For data: URLs we can't modify, so pass through
         if (url.startsWith('data:')) {
+            return new OriginalWorker(scriptURL, options);
+        }
+
+        // If blob workers are known to be blocked by CSP, skip injection entirely
+        if (blobWorkersBlocked || checkCSPForBlobWorkers()) {
             return new OriginalWorker(scriptURL, options);
         }
 
@@ -211,7 +242,11 @@ export function initWorkerInterception(): void {
                 }, 5000);
 
                 return worker;
-            } catch (e) {
+            } catch (e: any) {
+                // If CSP blocks blob workers, remember this for future calls
+                if (e && (e.name === 'SecurityError' || e.message?.includes('Content Security Policy'))) {
+                    blobWorkersBlocked = true;
+                }
                 // Fallback to original if our injection fails
                 return new OriginalWorker(scriptURL, options);
             }
@@ -228,7 +263,11 @@ export function initWorkerInterception(): void {
             }, 5000);
 
             return worker;
-        } catch (e) {
+        } catch (e: any) {
+            // If CSP blocks blob workers, remember this for future calls
+            if (e && (e.name === 'SecurityError' || e.message?.includes('Content Security Policy'))) {
+                blobWorkersBlocked = true;
+            }
             // Fallback to original if our injection fails
             return new OriginalWorker(scriptURL, options);
         }
@@ -254,6 +293,11 @@ export function initSharedWorkerInterception(): void {
             return new OriginalSharedWorker(scriptURL, options);
         }
 
+        // If blob workers are known to be blocked by CSP, skip injection entirely
+        if (blobWorkersBlocked || checkCSPForBlobWorkers()) {
+            return new OriginalSharedWorker(scriptURL, options);
+        }
+
         // For blob: URLs
         if (url.startsWith('blob:')) {
             try {
@@ -265,7 +309,11 @@ export function initSharedWorkerInterception(): void {
                 }, 5000);
 
                 return worker;
-            } catch (e) {
+            } catch (e: any) {
+                // If CSP blocks blob workers, remember this for future calls
+                if (e && (e.name === 'SecurityError' || e.message?.includes('Content Security Policy'))) {
+                    blobWorkersBlocked = true;
+                }
                 return new OriginalSharedWorker(scriptURL, options);
             }
         }
@@ -280,7 +328,11 @@ export function initSharedWorkerInterception(): void {
             }, 5000);
 
             return worker;
-        } catch (e) {
+        } catch (e: any) {
+            // If CSP blocks blob workers, remember this for future calls
+            if (e && (e.name === 'SecurityError' || e.message?.includes('Content Security Policy'))) {
+                blobWorkersBlocked = true;
+            }
             return new OriginalSharedWorker(scriptURL, options);
         }
     };

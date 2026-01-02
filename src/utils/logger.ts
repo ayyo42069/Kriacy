@@ -16,7 +16,8 @@ export type ApiType =
     | 'network'
     | 'fonts'
     | 'misc'
-    | 'media';
+    | 'media'
+    | 'svg';
 
 export interface SpoofLogEntry {
     id: string;

@@ -1,6 +1,6 @@
 // Barrel exports for all protection modules
 
-export { initCanvasProtection, initClientRectsProtection, modifyImageData } from './canvas';
+export { initCanvasProtection, initClientRectsProtection, initSVGRectsProtection, modifyImageData } from './canvas';
 export { initAudioProtection } from './audio';
 export { initWebGLProtection } from './webgl';
 export { initWebRTCProtection } from './webrtc';
