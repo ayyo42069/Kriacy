@@ -39,7 +39,7 @@ notes.md
 # Coverage & Testing
 coverage/
 .nyc_output/
-
+test/
 # Misc
 *.tgz
 *.zip
