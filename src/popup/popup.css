@@ -1,4 +1,4 @@
-/* Kriacy Popup Styles - Cozy Modern Theme */
+/* Kriacy Popup Styles */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -337,4 +337,27 @@ input:checked+.slider:before {
 
 .randomize-btn:active {
   animation: shake 0.3s ease;
+}
+/* Toolbar Icon Styles */
+.status-icon img {
+  filter: brightness(1.2);
+}
+
+.profile-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer-btn img {
+  opacity: 0.85;
+  transition: var(--transition);
+}
+
+.footer-btn:hover img {
+  opacity: 1;
+}
+
+.randomize-btn img {
+  filter: brightness(0.2);
 }

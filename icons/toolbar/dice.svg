@@ -1,0 +1,19 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="diceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d4a574"/>
+      <stop offset="50%" stop-color="#c9956a"/>
+      <stop offset="100%" stop-color="#a67c52"/>
+    </linearGradient>
+  </defs>
+  <!-- Dice body -->
+  <rect x="3" y="3" width="18" height="18" rx="3" fill="url(#diceGrad)"/>
+  <!-- Inner border -->
+  <rect x="5" y="5" width="14" height="14" rx="2" fill="none" stroke="#f5e6d3" stroke-width="0.5" opacity="0.5"/>
+  <!-- Dots -->
+  <circle cx="8" cy="8" r="1.5" fill="#f5e6d3"/>
+  <circle cx="16" cy="8" r="1.5" fill="#f5e6d3"/>
+  <circle cx="12" cy="12" r="1.5" fill="#f5e6d3"/>
+  <circle cx="8" cy="16" r="1.5" fill="#f5e6d3"/>
+  <circle cx="16" cy="16" r="1.5" fill="#f5e6d3"/>
+</svg>

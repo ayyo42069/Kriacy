@@ -737,3 +737,43 @@ input:checked+.slider:before {
     background: var(--accent-glow);
     color: var(--text-primary);
 }
+/* Toolbar Icon Styles */
+.nav-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-icon img {
+    filter: brightness(0.9);
+    transition: var(--transition);
+}
+
+.nav-item:hover .nav-icon img,
+.nav-item.active .nav-icon img {
+    filter: brightness(1.15);
+}
+
+.profile-card .profile-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.info-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.btn-sm img {
+    vertical-align: middle;
+    margin-right: 2px;
+}
+
+.btn-randomize-all img {
+    vertical-align: middle;
+    margin-right: 4px;
+}

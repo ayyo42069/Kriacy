@@ -14,61 +14,50 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
-                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <linearGradient id="cozyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#d4a574" />
-                                <stop offset="50%" stop-color="#c9956a" />
-                                <stop offset="100%" stop-color="#a67c52" />
-                            </linearGradient>
-                        </defs>
-                        <circle cx="16" cy="16" r="14" fill="url(#cozyGrad)" />
-                        <circle cx="16" cy="16" r="11" fill="none" stroke="#f5e6d3" stroke-width="1" opacity="0.4" />
-                        <path d="M12 8V24H15V17L21 24H25L18 16L24 8H20L15 15V8H12Z" fill="#f5e6d3" opacity="0.95" />
-                    </svg>
+                    <img src="icons/icon.svg" alt="Kriacy" width="32" height="32">
                     <span class="logo-text">Kriacy</span>
                 </div>
-                <span class="version">v1.0.8</span>
+                <span class="version">v1.0.9</span>
             </div>
 
             <nav class="sidebar-nav">
                 <a href="#general" class="nav-item active" data-section="general">
-                    <span class="nav-icon">⚙️</span>
+                    <img src="icons/toolbar/settings.svg" alt="" class="nav-icon" width="18" height="18">
                     <span>General</span>
                 </a>
                 <a href="#webrtc" class="nav-item" data-section="webrtc">
-                    <span class="nav-icon">🌐</span>
+                    <img src="icons/toolbar/globe.svg" alt="" class="nav-icon" width="18" height="18">
                     <span>WebRTC</span>
                 </a>
                 <a href="#canvas" class="nav-item" data-section="canvas">
-                    <span class="nav-icon">🎨</span>
+                    <img src="icons/toolbar/palette.svg" alt="" class="nav-icon" width="18" height="18">
                     <span>Canvas & Audio</span>
                 </a>
                 <a href="#webgl" class="nav-item" data-section="webgl">
-                    <span class="nav-icon">🖼️</span>
+                    <img src="icons/toolbar/image.svg" alt="" class="nav-icon" width="18" height="18">
                     <span>WebGL</span>
                 </a>
                 <a href="#navigator" class="nav-item" data-section="navigator">
-                    <span class="nav-icon">🧭</span>
+                    <img src="icons/toolbar/compass.svg" alt="" class="nav-icon" width="18" height="18">
                     <span>Navigator</span>
                 </a>
                 <a href="#screen" class="nav-item" data-section="screen">
-                    <span class="nav-icon">🖥️</span>
+                    <img src="icons/toolbar/monitor.svg" alt="" class="nav-icon" width="18" height="18">
                     <span>Screen</span>
                 </a>
                 <a href="#location" class="nav-item" data-section="location">
-                    <span class="nav-icon">📍</span>
+                    <img src="icons/toolbar/location.svg" alt="" class="nav-icon" width="18" height="18">
                     <span>Location</span>
                 </a>
                 <a href="#misc" class="nav-item" data-section="misc">
-                    <span class="nav-icon">🔧</span>
+                    <img src="icons/toolbar/wrench.svg" alt="" class="nav-icon" width="18" height="18">
                     <span>Misc</span>
                 </a>
             </nav>
 
             <div class="sidebar-footer">
                 <button class="btn btn-randomize-all" id="randomizeAllBtn">
-                    <span>🎲</span> Randomize All
+                    <img src="icons/toolbar/dice.svg" alt="" width="16" height="16"> Randomize All
                 </button>
                 <button class="btn btn-outline" id="resetBtn">Reset to Defaults</button>
             </div>
@@ -132,17 +121,18 @@
                     <div class="card-body">
                         <div class="profile-cards">
                             <div class="profile-card" data-profile="minimal">
-                                <span class="profile-icon">⚡</span>
+                                <img src="icons/toolbar/lightning.svg" alt="" class="profile-icon" width="24"
+                                    height="24">
                                 <h4>Minimal</h4>
                                 <p>WebRTC & geolocation blocking only. Maximum site compatibility.</p>
                             </div>
                             <div class="profile-card active" data-profile="balanced">
-                                <span class="profile-icon">⚖️</span>
+                                <img src="icons/toolbar/balance.svg" alt="" class="profile-icon" width="24" height="24">
                                 <h4>Balanced</h4>
                                 <p>All core protections enabled. Recommended for daily browsing.</p>
                             </div>
                             <div class="profile-card" data-profile="aggressive">
-                                <span class="profile-icon">🔒</span>
+                                <img src="icons/toolbar/lock.svg" alt="" class="profile-icon" width="24" height="24">
                                 <h4>Aggressive</h4>
                                 <p>Maximum protection including input & storage APIs. May break some sites.</p>
                             </div>
@@ -152,7 +142,7 @@
 
                 <div class="card info-card">
                     <div class="card-body">
-                        <div class="info-icon">💡</div>
+                        <img src="icons/toolbar/lightbulb.svg" alt="" class="info-icon" width="24" height="24">
                         <div class="info-content">
                             <h4>Session Rotating Fingerprints</h4>
                             <p>Kriacy automatically generates unique fingerprints for each browser session to prevent
@@ -209,7 +199,7 @@
                     <div class="card-header">
                         <h3>Canvas Fingerprint</h3>
                         <button class="btn btn-sm btn-icon" id="randomizeCanvas" title="Regenerate noise seed">
-                            🎲 Randomize
+                            <img src="icons/toolbar/dice.svg" alt="" width="14" height="14"> Randomize
                         </button>
                     </div>
                     <div class="card-body">
@@ -270,7 +260,7 @@
                     <div class="card-header">
                         <h3>GPU Information</h3>
                         <button class="btn btn-sm btn-icon" id="randomizeWebGL" title="Generate random GPU">
-                            🎲 Randomize
+                            <img src="icons/toolbar/dice.svg" alt="" width="14" height="14"> Randomize
                         </button>
                     </div>
                     <div class="card-body">
@@ -337,7 +327,7 @@
                         <h3>System Information</h3>
                         <button class="btn btn-sm btn-icon" id="randomizeNavigator"
                             title="Generate random system profile">
-                            🎲 Randomize
+                            <img src="icons/toolbar/dice.svg" alt="" width="14" height="14"> Randomize
                         </button>
                     </div>
                     <div class="card-body">
@@ -425,7 +415,7 @@
                         <h3>Display Information</h3>
                         <button class="btn btn-sm btn-icon" id="randomizeScreen"
                             title="Generate random screen settings">
-                            🎲 Randomize
+                            <img src="icons/toolbar/dice.svg" alt="" width="14" height="14"> Randomize
                         </button>
                     </div>
                     <div class="card-body">
@@ -494,7 +484,7 @@
                     <div class="card-header">
                         <h3>Geolocation</h3>
                         <button class="btn btn-sm btn-icon" id="randomizeLocation" title="Generate random location">
-                            🎲 Randomize
+                            <img src="icons/toolbar/dice.svg" alt="" width="14" height="14"> Randomize
                         </button>
                     </div>
                     <div class="card-body">
@@ -530,7 +520,8 @@
                                 <label class="setting-label-sm">Quick Locations:</label>
                                 <div class="preset-chips">
                                     <button class="chip" data-lat="40.7128" data-lng="-74.0060"
-                                        data-tz="America/New_York">New York</button>
+                                        data-tz="America/New_York">New
+                                        York</button>
                                     <button class="chip" data-lat="51.5074" data-lng="-0.1278"
                                         data-tz="Europe/London">London</button>
                                     <button class="chip" data-lat="35.6762" data-lng="139.6503"

@@ -1,0 +1,16 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="paletteGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d4a574"/>
+      <stop offset="50%" stop-color="#c9956a"/>
+      <stop offset="100%" stop-color="#a67c52"/>
+    </linearGradient>
+  </defs>
+  <!-- Palette shape -->
+  <path d="M12 2C6.49 2 2 6.49 2 12C2 17.51 6.49 22 12 22C12.83 22 13.5 21.33 13.5 20.5C13.5 20.12 13.37 19.77 13.14 19.5C12.92 19.23 12.8 18.88 12.8 18.5C12.8 17.67 13.47 17 14.3 17H16C19.31 17 22 14.31 22 11C22 5.96 17.52 2 12 2Z" fill="url(#paletteGrad)"/>
+  <!-- Color dots -->
+  <circle cx="7" cy="12" r="1.5" fill="#f5e6d3"/>
+  <circle cx="10" cy="8" r="1.5" fill="#e8d4bc"/>
+  <circle cx="14" cy="8" r="1.5" fill="#8b6543"/>
+  <circle cx="17" cy="12" r="1.5" fill="#f5e6d3"/>
+</svg>

@@ -1,6 +1,6 @@
 {
     "name": "kriacy",
-    "version": "1.0.8",
+    "version": "1.0.9",
     "description": "Privacy-focused Chrome extension to spoof browser fingerprinting vectors",
     "author": "Kristof (https://kristof.best)",
     "repository": {
@@ -16,6 +16,8 @@
     "devDependencies": {
         "@types/bun": "^1.3.5",
         "@types/chrome": "^0.0.268",
+        "@types/sharp": "^0.32.0",
+        "sharp": "^0.34.5",
         "typescript": "^5.3.3"
     }
 }
