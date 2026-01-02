@@ -40,6 +40,7 @@ notes.md
 coverage/
 .nyc_output/
 test/
+
 # Misc
 *.tgz
 *.zip
