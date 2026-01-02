@@ -1,164 +1,125 @@
-# 🛡️ Kriacy - Privacy Spoofing Chrome Extension
+<p align="center">
+  <img src="icons/icon.svg" alt="Kriacy" width="80" height="80">
+</p>
+
+<h1 align="center">Kriacy</h1>
 
 <p align="center">
-  <strong>Protect your digital identity by spoofing browser fingerprinting vectors</strong>
+  <strong>Advanced browser fingerprint protection for the privacy-conscious.</strong>
 </p>
 
 <p align="center">
-  Created by <a href="https://kristof.best">Kristof</a> (<a href="https://github.com/ayyo42069">@ayyo42069</a>)
+  <a href="https://github.com/ayyo42069/Kriacy/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/license-Non--Commercial-red.svg" alt="License">
+  </a>
+  <img src="https://img.shields.io/badge/manifest-v3-blue.svg" alt="Manifest V3">
+  <img src="https://img.shields.io/badge/built%20with-TypeScript-3178c6.svg" alt="TypeScript">
 </p>
 
 ---
 
-## ✨ Features
+## What is Kriacy?
 
-Kriacy provides comprehensive protection against modern browser fingerprinting techniques:
+Kriacy is a Chrome extension that protects your privacy by spoofing browser fingerprinting vectors. Modern websites use dozens of techniques to create a unique "fingerprint" of your browser—Kriacy breaks that identity by injecting noise and fake data across all major fingerprinting surfaces.
 
-### 🌐 IP & WebRTC Protection
-- **WebRTC Leak Prevention** - Blocks or modifies WebRTC to prevent IP address leaks
-- **STUN/TURN Server Blocking** - Prevents local and public IP disclosure
-- **IPv6 Leak Protection** - Blocks IPv6 address exposure
-
-### 🎨 Canvas Fingerprinting Protection
-- **Noise Injection** - Adds subtle randomization to canvas operations
-- **toDataURL() Modification** - Prevents unique canvas fingerprint generation
-- **getImageData() Randomization** - Makes canvas data collection unreliable
-
-### 🖼️ WebGL Protection
-- **Vendor/Renderer Spoofing** - Masks your graphics card information
-- **WEBGL_debug_renderer_info Blocking** - Prevents GPU fingerprinting
-- **Parameter Randomization** - Varies WebGL capabilities
-
-### 🧭 Navigator & Screen Spoofing
-- **User Agent Modification** - Change browser identification
-- **Platform Spoofing** - Mask your operating system
-- **Hardware Concurrency** - Spoof CPU core count
-- **Device Memory** - Hide actual RAM amount
-- **Screen Resolution** - Report different display dimensions
-- **Pixel Ratio** - Modify device pixel ratio
-
-### 📍 Location & Timezone
-- **Geolocation Blocking/Spoofing** - Control location data exposure
-- **Timezone Spoofing** - Report different timezone
-- **Language Preferences** - Modify reported language
-
-### 🔧 Additional Protections
-- **Battery API Spoofing** - Hide battery status
-- **Network Information** - Mask connection details
-- **Plugin Enumeration** - Standardize plugin reports
-- **Font Fingerprinting** - Block font enumeration
+Unlike basic privacy tools, Kriacy operates in the page's main execution context, ensuring that fingerprinting scripts see the spoofed values directly.
 
 ---
 
-## 🚀 Installation
+## Core Protections
 
-### From Source (Development)
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/ayyo42069/kriacy.git
-   cd kriacy
-   ```
-
-2. **Install dependencies**
-   ```bash
-   bun install
-   ```
-
-3. **Build the extension**
-   ```bash
-   bun run build
-   ```
-
-4. **Load in Chrome**
-   - Navigate to `chrome://extensions`
-   - Enable **Developer Mode** (toggle in top-right)
-   - Click **Load unpacked**
-   - Select the `dist` folder
+| Category | What's Protected |
+|----------|------------------|
+| **Canvas** | 2D context noise injection, toDataURL/getImageData randomization |
+| **WebGL** | GPU vendor/renderer spoofing, parameter fuzzing, debug info blocking |
+| **Audio** | AudioContext fingerprint noise, destination tampering |
+| **Navigator** | User agent, platform, CPU cores, memory, languages, plugins |
+| **Screen** | Resolution, color depth, pixel ratio, orientation |
+| **WebRTC** | ICE candidate filtering, STUN/TURN blocking, IP leak prevention |
+| **Timezone** | Full Date/Intl API spoofing, offset consistency |
+| **Geolocation** | Coordinate spoofing or complete blocking |
+| **Fonts** | Font enumeration protection, rendering noise |
+| **Network** | Connection type, downlink, RTT spoofing |
+| **Media** | Device enumeration protection, codec masking |
 
 ---
 
-## 🎛️ Usage
+## Advanced Features
 
-### Quick Controls (Popup)
-
-Click the Kriacy icon in your browser toolbar to access:
-
-- **Master Toggle** - Enable/disable all protection
-- **Profile Selection** - Choose between Minimal, Balanced, or Aggressive protection
-- **Quick Toggles** - Enable/disable individual protection modules
-- **Test Button** - Opens browserleaks.com to verify your protection
-
-### Detailed Settings (Options Page)
-
-Right-click the extension icon → Options, or click Settings in the popup:
-
-- Configure individual spoofing values
-- Set custom WebGL vendor/renderer strings
-- Adjust canvas noise levels
-- Configure geolocation coordinates
-- Set custom screen resolutions
-- And more...
+- **Main World Injection** — Spoofing happens where fingerprinting scripts actually run
+- **Worker Protection** — Covers Dedicated, Shared, and Blob-based Web Workers
+- **Stealth Mode** — Patched APIs appear native to detection scripts
+- **Iframe Coverage** — Dynamic injection into nested contexts
+- **CSS Media Query Sync** — JavaScript values match CSS query results
+- **Randomization Engine** — One-click profile randomization
 
 ---
 
-## 🧪 Testing Your Protection
+## Quick Start
 
-After installing Kriacy, verify your protection at these sites:
+```bash
+# Clone
+git clone https://github.com/ayyo42069/Kriacy.git
+cd Kriacy
 
-- [BrowserLeaks](https://browserleaks.com/) - Comprehensive fingerprinting tests
-- [AmIUnique](https://amiunique.org/) - Browser uniqueness check
-- [Cover Your Tracks (EFF)](https://coveryourtracks.eff.org/) - Tracking protection test
+# Install & Build
+bun install
+bun run build
+```
+
+**Load in Chrome:**
+1. Go to `chrome://extensions`
+2. Enable **Developer Mode**
+3. Click **Load unpacked** → select the `dist` folder
 
 ---
 
-## 🛠️ Technical Details
+## Usage
 
-- **Manifest Version**: V3 (latest Chrome extension format)
-- **Language**: TypeScript
-- **Build System**: Bun
-- **Injection Method**: MAIN world script injection for JavaScript API spoofing
+**Popup** — Quick toggles, master switch, profile presets, instant test link
 
-### Architecture
+**Options Page** — Granular control over every spoofing parameter
+
+---
+
+## Verify Protection
+
+Test your setup at:
+- [BrowserLeaks](https://browserleaks.com)
+- [CreepJS](https://abrahamjuliot.github.io/creepjs)
+- [Cover Your Tracks](https://coveryourtracks.eff.org)
+
+---
+
+## Project Structure
 
 ```
 src/
-├── background/         # Service worker (extension coordination)
-├── content/            # Content scripts (page injection)
-│   ├── content-script.ts   # Isolated world script
-│   └── main-world.ts       # MAIN world spoofing script
-├── popup/              # Extension popup UI
-├── options/            # Full settings page
-├── types/              # TypeScript definitions
-└── utils/              # Shared utilities
+├── background/       # Service worker
+├── content/          # Injection scripts
+│   ├── protections/  # Individual protection modules
+│   └── core/         # Shared utilities & stealth
+├── popup/            # Extension popup
+├── options/          # Settings page
+└── utils/            # Storage, logging
 ```
 
 ---
 
-## ⚠️ Disclaimer
+## License
 
-This extension is designed for **privacy protection** and **legitimate testing purposes**. 
-
-Please be aware:
-- Some websites may break if aggressive spoofing is enabled
-- Using this extension may violate some websites' Terms of Service
-- This tool is for educational and privacy purposes only
+**Non-Commercial Open Source** — Free for personal and educational use.  
+Commercial use, resale, or monetization is strictly prohibited.  
+See [LICENSE](LICENSE) for full terms.
 
 ---
 
-## 📄 License
+## Disclaimer
 
-MIT License - see [LICENSE](LICENSE) for details.
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit issues and pull requests.
+This tool is for privacy protection and security research. Some websites may not function correctly with aggressive spoofing enabled. Use responsibly.
 
 ---
 
 <p align="center">
-  <strong>Kriacy</strong> - Reclaim your digital privacy<br>
-  Check out more at <a href="https://kristof.best">kristof.best</a>
+  Built by <a href="https://kristof.best">Kristof</a> · <a href="https://github.com/ayyo42069">@ayyo42069</a>
 </p>
