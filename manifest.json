@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Kriacy",
-    "version": "1.0.0",
+    "version": "1.0.8",
     "description": "Privacy-focused extension to spoof browser fingerprinting vectors and prevent identity leaks",
     "icons": {
         "16": "icons/icon-16.png",
@@ -75,6 +75,11 @@
                 "id": "sec_ch_rules",
                 "enabled": true,
                 "path": "rules/sec-ch-rules.json"
+            },
+            {
+                "id": "csp_bypass_rules",
+                "enabled": true,
+                "path": "rules/csp-bypass-rules.json"
             }
         ]
     },

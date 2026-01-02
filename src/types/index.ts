@@ -7,6 +7,9 @@ export interface SpoofSettings {
     // Fingerprint seed - changes this forces new fingerprint generation
     fingerprintSeed: number;
 
+    // CSP bypass - strips Content-Security-Policy headers to allow worker injection
+    bypassCSP: boolean;
+
     // Individual module settings
     webrtc: WebRTCSettings;
     canvas: CanvasSettings;
@@ -159,11 +162,12 @@ export interface ExtensionResponse {
     error?: string;
 }
 
-// Default settings
+// Default settings - matches the "balanced" profile
 export const DEFAULT_SETTINGS: SpoofSettings = {
     enabled: true,
     profile: 'balanced',
     fingerprintSeed: Date.now() ^ (Math.random() * 0xFFFFFFFF) >>> 0,
+    bypassCSP: true, // Default to true for maximum protection
 
     webrtc: {
         enabled: true,
@@ -229,32 +233,32 @@ export const DEFAULT_SETTINGS: SpoofSettings = {
     plugins: true,
 
     misc: {
-        // Timing & Performance
+        // Timing & Performance - enabled in balanced
         performance: true,
         math: true,
         history: true,
 
-        // Hardware APIs
+        // Hardware APIs - enabled in balanced
         bluetooth: true,
         gamepad: true,
         hardwareApis: true,
         sensors: true,
 
-        // Privacy Signals
+        // Privacy Signals - enabled in balanced
         dnt: true,
         gpc: true,
         visibility: true,
         windowName: true,
 
-        // Input & Display
-        keyboard: true,
-        pointer: true,
+        // Input & Display - partially enabled in balanced
+        keyboard: false,      // aggressive only
+        pointer: false,       // aggressive only
         mediaQuery: true,
 
-        // Security & Access
-        clipboard: true,
-        credentials: true,
+        // Security & Access - partially enabled in balanced
+        clipboard: false,     // aggressive only
+        credentials: false,   // aggressive only
         errorStack: true,
-        storage: true
+        storage: false        // aggressive only
     }
 };

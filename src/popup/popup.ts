@@ -133,6 +133,43 @@ if (masterToggle) {
     });
 }
 
+// Profile presets for comprehensive protection levels
+const PROFILE_PRESETS = {
+    minimal: {
+        // Minimal: Only essential protections, maximum compatibility
+        webrtc: { enabled: true },
+        canvas: { enabled: false, noiseLevel: 5 },
+        webgl: { enabled: false },
+        fonts: { enabled: false },
+        screen: { enabled: false },
+        geolocation: { enabled: true },
+        audio: { enabled: false },
+        navigator: { enabled: false }
+    },
+    balanced: {
+        // Balanced: Standard protections for most users
+        webrtc: { enabled: true },
+        canvas: { enabled: true, noiseLevel: 10 },
+        webgl: { enabled: true },
+        fonts: { enabled: true },
+        screen: { enabled: true },
+        geolocation: { enabled: true },
+        audio: { enabled: true },
+        navigator: { enabled: true }
+    },
+    aggressive: {
+        // Aggressive: Maximum protection, may break some sites
+        webrtc: { enabled: true },
+        canvas: { enabled: true, noiseLevel: 25 },
+        webgl: { enabled: true },
+        fonts: { enabled: true },
+        screen: { enabled: true },
+        geolocation: { enabled: true },
+        audio: { enabled: true },
+        navigator: { enabled: true }
+    }
+};
+
 // Profile buttons
 profileBtns.forEach(btn => {
     btn.addEventListener('click', async () => {
@@ -140,34 +177,21 @@ profileBtns.forEach(btn => {
         const profile = (btn as HTMLButtonElement).dataset.profile as SpoofSettings['profile'];
         currentSettings.profile = profile;
 
-        // Apply profile presets
-        switch (profile) {
-            case 'minimal':
-                currentSettings.webrtc = { enabled: true };
-                currentSettings.canvas = { enabled: false };
-                currentSettings.webgl = { enabled: false };
-                currentSettings.fonts = { enabled: false };
-                currentSettings.screen = { enabled: false };
-                currentSettings.geolocation = { enabled: true };
-                break;
-
-            case 'balanced':
-                currentSettings.webrtc = { enabled: true };
-                currentSettings.canvas = { enabled: true };
-                currentSettings.webgl = { enabled: true };
-                currentSettings.fonts = { enabled: true };
-                currentSettings.screen = { enabled: true };
-                currentSettings.geolocation = { enabled: true };
-                break;
-
-            case 'aggressive':
-                currentSettings.webrtc = { enabled: true };
-                currentSettings.canvas = { enabled: true };
-                currentSettings.webgl = { enabled: true };
-                currentSettings.fonts = { enabled: true };
-                currentSettings.screen = { enabled: true };
-                currentSettings.geolocation = { enabled: true };
-                break;
+        // Apply comprehensive profile presets
+        const preset = PROFILE_PRESETS[profile as keyof typeof PROFILE_PRESETS];
+        if (preset) {
+            currentSettings.webrtc = { ...currentSettings.webrtc, ...preset.webrtc };
+            currentSettings.canvas = { ...currentSettings.canvas, ...preset.canvas };
+            currentSettings.webgl = { ...currentSettings.webgl, ...preset.webgl };
+            currentSettings.fonts = { ...currentSettings.fonts, ...preset.fonts };
+            currentSettings.screen = { ...currentSettings.screen, ...preset.screen };
+            currentSettings.geolocation = { ...currentSettings.geolocation, ...preset.geolocation };
+            if (currentSettings.audio) {
+                currentSettings.audio = { ...currentSettings.audio, ...preset.audio };
+            }
+            if (currentSettings.navigator) {
+                currentSettings.navigator = { ...currentSettings.navigator, ...preset.navigator };
+            }
         }
 
         updateUI();

@@ -28,7 +28,7 @@
                     </svg>
                     <span class="logo-text">Kriacy</span>
                 </div>
-                <span class="version">v1.0.7</span>
+                <span class="version">v1.0.8</span>
             </div>
 
             <nav class="sidebar-nav">
@@ -98,6 +98,30 @@
                                 <span class="slider"></span>
                             </label>
                         </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Skip Local Files</label>
+                                <p class="setting-desc">Disable protections for local files (file://, PDFs, etc.) to
+                                    prevent issues</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="skipLocalFilesToggle" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>CSP Bypass</label>
+                                <p class="setting-desc">Strip Content-Security-Policy headers to allow worker
+                                    fingerprint injection (may reduce site security)</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="bypassCSPToggle" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -110,17 +134,17 @@
                             <div class="profile-card" data-profile="minimal">
                                 <span class="profile-icon">⚡</span>
                                 <h4>Minimal</h4>
-                                <p>Basic protection with minimal website breakage</p>
+                                <p>WebRTC & geolocation blocking only. Maximum site compatibility.</p>
                             </div>
                             <div class="profile-card active" data-profile="balanced">
                                 <span class="profile-icon">⚖️</span>
                                 <h4>Balanced</h4>
-                                <p>Recommended protection for most users</p>
+                                <p>All core protections enabled. Recommended for daily browsing.</p>
                             </div>
                             <div class="profile-card" data-profile="aggressive">
                                 <span class="profile-icon">🔒</span>
                                 <h4>Aggressive</h4>
-                                <p>Maximum protection, may break some sites</p>
+                                <p>Maximum protection including input & storage APIs. May break some sites.</p>
                             </div>
                         </div>
                     </div>

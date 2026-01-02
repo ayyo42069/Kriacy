@@ -30,6 +30,7 @@ try {
 const DEFAULT_SETTINGS: KriacySettings = {
     enabled: true,
     fingerprintSeed: fallbackSeed,
+    skipLocalFiles: true, // Skip protections for local files (file://, PDFs) by default
     webrtc: { enabled: true, mode: 'block' },
     canvas: { enabled: true, noiseLevel: 10 },
     audio: { enabled: true },

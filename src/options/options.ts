@@ -4,6 +4,8 @@ interface SpoofSettings {
     enabled: boolean;
     profile: 'minimal' | 'balanced' | 'aggressive' | 'custom';
     fingerprintSeed: number;
+    skipLocalFiles: boolean;
+    bypassCSP: boolean;
     webrtc: { enabled: boolean; mode: string };
     canvas: { enabled: boolean; noiseLevel: number };
     audio: { enabled: boolean };
@@ -173,6 +175,8 @@ const sections = document.querySelectorAll('.section');
 
 // General
 const enabledToggle = document.getElementById('enabledToggle') as HTMLInputElement;
+const skipLocalFilesToggle = document.getElementById('skipLocalFilesToggle') as HTMLInputElement;
+const bypassCSPToggle = document.getElementById('bypassCSPToggle') as HTMLInputElement;
 const profileCards = document.querySelectorAll('.profile-card');
 const resetBtn = document.getElementById('resetBtn') as HTMLButtonElement;
 const randomizeAllBtn = document.getElementById('randomizeAllBtn') as HTMLButtonElement;
@@ -305,6 +309,8 @@ function updateUI(): void {
 
     // General
     enabledToggle.checked = currentSettings.enabled;
+    if (skipLocalFilesToggle) skipLocalFilesToggle.checked = currentSettings.skipLocalFiles ?? true;
+    if (bypassCSPToggle) bypassCSPToggle.checked = currentSettings.bypassCSP ?? true;
 
     // Profile
     profileCards.forEach(card => {
@@ -661,6 +667,131 @@ enabledToggle.addEventListener('change', async () => {
     await saveSettings();
 });
 
+skipLocalFilesToggle?.addEventListener('change', async () => {
+    if (!currentSettings) return;
+    (currentSettings as any).skipLocalFiles = skipLocalFilesToggle.checked;
+    await saveSettings();
+});
+
+bypassCSPToggle?.addEventListener('change', async () => {
+    if (!currentSettings) return;
+    (currentSettings as any).bypassCSP = bypassCSPToggle.checked;
+    await saveSettings();
+    showToast('CSP bypass ' + (bypassCSPToggle.checked ? 'enabled' : 'disabled'));
+});
+
+// Comprehensive profile presets that match protection level descriptions
+const PROFILE_PRESETS = {
+    minimal: {
+        // Minimal: Only essential protections, maximum website compatibility
+        webrtc: { enabled: true, mode: 'disable_non_proxied' },
+        canvas: { enabled: false, noiseLevel: 5 },
+        audio: { enabled: false },
+        webgl: { enabled: false },
+        fonts: { enabled: false, blockEnumeration: false, spoofMetrics: false },
+        navigator: { enabled: false },
+        screen: { enabled: false },
+        geolocation: { enabled: true, mode: 'block' },
+        timezone: { enabled: false },
+        battery: false,
+        network: false,
+        plugins: false,
+        misc: {
+            performance: false,
+            math: false,
+            history: false,
+            bluetooth: true,
+            gamepad: false,
+            hardwareApis: true,
+            sensors: false,
+            dnt: true,
+            gpc: true,
+            visibility: false,
+            windowName: false,
+            keyboard: false,
+            pointer: false,
+            mediaQuery: false,
+            clipboard: false,
+            credentials: false,
+            errorStack: false,
+            storage: false,
+            blockServiceWorkers: false
+        }
+    },
+    balanced: {
+        // Balanced: Recommended protection for most users
+        webrtc: { enabled: true, mode: 'block' },
+        canvas: { enabled: true, noiseLevel: 10 },
+        audio: { enabled: true },
+        webgl: { enabled: true },
+        fonts: { enabled: true, blockEnumeration: true, spoofMetrics: true },
+        navigator: { enabled: true },
+        screen: { enabled: true },
+        geolocation: { enabled: true, mode: 'block' },
+        timezone: { enabled: true },
+        battery: true,
+        network: true,
+        plugins: true,
+        misc: {
+            performance: true,
+            math: true,
+            history: true,
+            bluetooth: true,
+            gamepad: true,
+            hardwareApis: true,
+            sensors: true,
+            dnt: true,
+            gpc: true,
+            visibility: true,
+            windowName: true,
+            keyboard: false,
+            pointer: false,
+            mediaQuery: true,
+            clipboard: false,
+            credentials: false,
+            errorStack: true,
+            storage: false,
+            blockServiceWorkers: false
+        }
+    },
+    aggressive: {
+        // Aggressive: Maximum protection, may break some websites
+        webrtc: { enabled: true, mode: 'block' },
+        canvas: { enabled: true, noiseLevel: 25 },
+        audio: { enabled: true },
+        webgl: { enabled: true },
+        fonts: { enabled: true, blockEnumeration: true, spoofMetrics: true },
+        navigator: { enabled: true },
+        screen: { enabled: true },
+        geolocation: { enabled: true, mode: 'block' },
+        timezone: { enabled: true },
+        battery: true,
+        network: true,
+        plugins: true,
+        misc: {
+            performance: true,
+            math: true,
+            history: true,
+            bluetooth: true,
+            gamepad: true,
+            hardwareApis: true,
+            sensors: true,
+            dnt: true,
+            gpc: true,
+            visibility: true,
+            windowName: true,
+            keyboard: true,
+            pointer: true,
+            mediaQuery: true,
+            clipboard: true,
+            credentials: true,
+            errorStack: true,
+            storage: true,
+            blockServiceWorkers: false
+        }
+    }
+};
+
 // Profile cards
 profileCards.forEach(card => {
     card.addEventListener('click', async () => {
@@ -671,7 +802,30 @@ profileCards.forEach(card => {
         profileCards.forEach(c => c.classList.remove('active'));
         card.classList.add('active');
 
+        // Apply comprehensive profile presets
+        const preset = PROFILE_PRESETS[profile as keyof typeof PROFILE_PRESETS];
+        if (preset) {
+            // Apply all preset settings
+            currentSettings.webrtc = { ...currentSettings.webrtc, ...preset.webrtc };
+            currentSettings.canvas = { ...currentSettings.canvas, ...preset.canvas };
+            currentSettings.audio = { ...currentSettings.audio, ...preset.audio };
+            currentSettings.webgl = { ...currentSettings.webgl, ...preset.webgl };
+            currentSettings.fonts = { ...currentSettings.fonts, ...preset.fonts };
+            currentSettings.navigator = { ...currentSettings.navigator, ...preset.navigator };
+            currentSettings.screen = { ...currentSettings.screen, ...preset.screen };
+            currentSettings.geolocation = { ...currentSettings.geolocation, ...preset.geolocation };
+            currentSettings.timezone = { ...currentSettings.timezone, ...preset.timezone };
+            currentSettings.battery = preset.battery;
+            currentSettings.network = preset.network;
+            currentSettings.plugins = preset.plugins;
+            currentSettings.misc = { ...currentSettings.misc, ...preset.misc };
+
+            // Update the UI to reflect new settings
+            updateUI();
+        }
+
         await saveSettings();
+        showToast(`${profile.charAt(0).toUpperCase() + profile.slice(1)} profile applied!`);
     });
 });
 

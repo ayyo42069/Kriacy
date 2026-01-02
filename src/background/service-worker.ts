@@ -149,6 +149,35 @@ function validateSettings(input: unknown): SpoofSettings {
 // Dynamic rule IDs for SEC-CH headers (use high ID to avoid conflicts with static rules)
 const DYNAMIC_RULE_ID = 9999;
 
+// CSP bypass ruleset ID (from manifest - static rules)
+const CSP_BYPASS_RULESET_ID = 'csp_bypass_rules';
+
+// Update CSP bypass rules based on settings
+async function updateCSPBypassRules(settings: SpoofSettings): Promise<void> {
+    try {
+        // Get current enabled rulesets
+        const enabledRulesets = await chrome.declarativeNetRequest.getEnabledRulesets();
+        const isCurrentlyEnabled = enabledRulesets.includes(CSP_BYPASS_RULESET_ID);
+        const shouldBeEnabled = settings.enabled && settings.bypassCSP;
+
+        if (shouldBeEnabled && !isCurrentlyEnabled) {
+            // Enable CSP bypass
+            await chrome.declarativeNetRequest.updateEnabledRulesets({
+                enableRulesetIds: [CSP_BYPASS_RULESET_ID]
+            });
+            console.log('[Kriacy] CSP bypass enabled');
+        } else if (!shouldBeEnabled && isCurrentlyEnabled) {
+            // Disable CSP bypass  
+            await chrome.declarativeNetRequest.updateEnabledRulesets({
+                disableRulesetIds: [CSP_BYPASS_RULESET_ID]
+            });
+            console.log('[Kriacy] CSP bypass disabled');
+        }
+    } catch (error) {
+        console.error('[Kriacy] Error updating CSP bypass rules:', error);
+    }
+}
+
 // Update SEC-CH header rules based on settings
 async function updateSecChRules(settings: SpoofSettings): Promise<void> {
     try {
@@ -259,6 +288,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     const settings = await getSettings();
     await updateBadge(settings.enabled);
     await updateSecChRules(settings);
+    await updateCSPBypassRules(settings);
 });
 
 // Handle messages from content scripts and popup
@@ -289,6 +319,7 @@ async function handleMessage(
                 // Update badge and SEC-CH rules
                 await updateBadge(settings.enabled);
                 await updateSecChRules(settings);
+                await updateCSPBypassRules(settings);
                 return { success: true, data: settings };
             }
 
@@ -299,6 +330,7 @@ async function handleMessage(
                 await notifyAllTabs(settings);
                 await updateBadge(settings.enabled);
                 await updateSecChRules(settings);
+                await updateCSPBypassRules(settings);
                 return { success: true, data: settings };
             }
 
@@ -410,6 +442,7 @@ async function handleMessage(
                 await saveSettings(settings);
                 await notifyAllTabs(settings);
                 await updateSecChRules(settings);
+                await updateCSPBypassRules(settings);
 
                 console.log('[Kriacy] All settings randomized with new seed:', settings.fingerprintSeed);
                 return { success: true, data: settings };
@@ -423,6 +456,7 @@ async function handleMessage(
                 await notifyAllTabs(defaultSettings);
                 await updateBadge(defaultSettings.enabled);
                 await updateSecChRules(defaultSettings);
+                await updateCSPBypassRules(defaultSettings);
                 console.log('[Kriacy] Settings reset to defaults');
                 return { success: true, data: defaultSettings };
             }
@@ -479,6 +513,7 @@ async function updateBadge(enabled: boolean): Promise<void> {
 getSettings().then(async settings => {
     await updateBadge(settings.enabled);
     await updateSecChRules(settings);
+    await updateCSPBypassRules(settings);
 }).catch(console.error);
 
 // Listen for tab updates to inject scripts into MAIN world

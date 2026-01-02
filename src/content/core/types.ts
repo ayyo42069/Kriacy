@@ -82,6 +82,7 @@ export interface MiscSettings {
 export interface KriacySettings {
     enabled: boolean;
     fingerprintSeed: number;
+    skipLocalFiles: boolean; // Skip protections for local files (file://, PDFs, etc.)
     webrtc: WebRTCSettings;
     canvas: CanvasSettings;
     audio: AudioSettings;

@@ -35,6 +35,20 @@ import { initTextRenderingProtection } from './protections/text-rendering';
     (window as any).__KRIACY_INITIALIZED__ = true;
 
     // ============================================
+    // Check if we should skip local files
+    // ============================================
+    const isLocalFile = window.location.protocol === 'file:' ||
+        window.location.href.endsWith('.pdf') ||
+        window.location.href.includes('.pdf#') ||
+        window.location.href.includes('.pdf?');
+
+    // If skipLocalFiles is enabled (default) and this is a local file, skip all protections
+    if (settings.skipLocalFiles !== false && isLocalFile) {
+        console.log('[Kriacy] Skipping protections for local file:', window.location.href);
+        return;
+    }
+
+    // ============================================
     // Initialize Stealth Protections FIRST
     // This patches Function.prototype.toString before any other modifications
     // ============================================

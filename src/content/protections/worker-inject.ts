@@ -174,19 +174,34 @@ export function initBlobInterception(): void {
 
 /**
  * Create a wrapper script that injects our code before the original script
+ * For module workers, we use dynamic import instead of importScripts
  */
-function createWrapperBlobUrl(originalUrl: string): string {
-    const wrapperScript = `
+function createWrapperBlobUrl(originalUrl: string, isModule: boolean = false): string {
+    let wrapperScript: string;
+
+    if (isModule) {
+        // Module workers: use dynamic import instead of importScripts
+        wrapperScript = `
+${getWorkerSpoofCode()}
+import('${originalUrl}');
+`;
+    } else {
+        // Classic workers: use importScripts
+        wrapperScript = `
 ${getWorkerSpoofCode()}
 importScripts('${originalUrl}');
 `;
-    const blob = new OriginalBlob([wrapperScript], { type: 'text/javascript' });
+    }
+
+    const blob = new OriginalBlob([wrapperScript], { type: isModule ? 'text/javascript' : 'text/javascript' });
     return OriginalURL.createObjectURL(blob);
 }
 
 /**
  * Check if blob URLs are likely blocked by CSP for workers
  * We detect this by checking the CSP meta tags or by caching previous failures
+ * NOTE: CSP headers are stripped at the network level via declarativeNetRequest rules,
+ * so this is primarily a fallback for meta tag-based CSP
  */
 let blobWorkersBlocked = false;
 
@@ -195,6 +210,7 @@ function checkCSPForBlobWorkers(): boolean {
 
     try {
         // Check for CSP meta tags that might block blob workers
+        // Note: HTTP header CSP is stripped by declarativeNetRequest rules
         const cspMetas = document.querySelectorAll('meta[http-equiv="Content-Security-Policy"]');
         for (const meta of cspMetas) {
             const content = meta.getAttribute('content') || '';
@@ -204,6 +220,9 @@ function checkCSPForBlobWorkers(): boolean {
                 return true;
             }
         }
+
+        // Try to detect CSP via SecurityPolicyViolationEvent (modern browsers)
+        // This won't help on first load but will for subsequent navigations
     } catch (e) {
         // Ignore errors during CSP check
     }
@@ -218,6 +237,7 @@ export function initWorkerInterception(): void {
 
     w.Worker = function (scriptURL: string | URL, options?: WorkerOptions): Worker {
         const url = scriptURL.toString();
+        const isModuleWorker = options?.type === 'module';
 
         // For data: URLs we can't modify, so pass through
         if (url.startsWith('data:')) {
@@ -233,7 +253,14 @@ export function initWorkerInterception(): void {
         // So we need to inject our code as well
         if (url.startsWith('blob:')) {
             try {
-                const blobUrl = createWrapperBlobUrl(url);
+                // For module workers, we can't use importScripts on blob URLs
+                // We need to skip injection or use a different approach
+                if (isModuleWorker) {
+                    // For module workers with blob URLs, pass through as we can't safely inject
+                    return new OriginalWorker(scriptURL, options);
+                }
+
+                const blobUrl = createWrapperBlobUrl(url, false);
                 const worker = new OriginalWorker(blobUrl, options);
 
                 // Clean up blob URL after worker starts
@@ -254,8 +281,14 @@ export function initWorkerInterception(): void {
 
         // For regular URLs, create a wrapper blob that injects our code then imports the original
         try {
-            const blobUrl = createWrapperBlobUrl(url);
-            const worker = new OriginalWorker(blobUrl, options);
+            const blobUrl = createWrapperBlobUrl(url, isModuleWorker);
+
+            // For module workers, we need to specify type: 'module' for the wrapper too
+            const workerOptions = isModuleWorker
+                ? { ...options, type: 'module' as WorkerType }
+                : options;
+
+            const worker = new OriginalWorker(blobUrl, workerOptions);
 
             // Clean up blob URL after worker starts
             setTimeout(() => {
@@ -288,6 +321,10 @@ export function initSharedWorkerInterception(): void {
     w.SharedWorker = function (scriptURL: string | URL, options?: string | WorkerOptions): SharedWorker {
         const url = scriptURL.toString();
 
+        // SharedWorker options can be a string (name) or WorkerOptions
+        const workerOptions = typeof options === 'string' ? { name: options } : options;
+        const isModuleWorker = (workerOptions as WorkerOptions)?.type === 'module';
+
         // For data: URLs we can't modify, so pass through
         if (url.startsWith('data:')) {
             return new OriginalSharedWorker(scriptURL, options);
@@ -301,7 +338,12 @@ export function initSharedWorkerInterception(): void {
         // For blob: URLs
         if (url.startsWith('blob:')) {
             try {
-                const blobUrl = createWrapperBlobUrl(url);
+                // For module workers, we can't use importScripts on blob URLs
+                if (isModuleWorker) {
+                    return new OriginalSharedWorker(scriptURL, options);
+                }
+
+                const blobUrl = createWrapperBlobUrl(url, false);
                 const worker = new OriginalSharedWorker(blobUrl, options);
 
                 setTimeout(() => {
@@ -320,8 +362,14 @@ export function initSharedWorkerInterception(): void {
 
         // For regular URLs
         try {
-            const blobUrl = createWrapperBlobUrl(url);
-            const worker = new OriginalSharedWorker(blobUrl, options);
+            const blobUrl = createWrapperBlobUrl(url, isModuleWorker);
+
+            // For module workers, we need to specify type: 'module' for the wrapper too
+            const newOptions = isModuleWorker
+                ? { ...(workerOptions || {}), type: 'module' as WorkerType }
+                : options;
+
+            const worker = new OriginalSharedWorker(blobUrl, newOptions);
 
             setTimeout(() => {
                 try { OriginalURL.revokeObjectURL(blobUrl); } catch (e) { }
