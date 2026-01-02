@@ -9,8 +9,6 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "deps"
-    labels:
-      - "dependencies"
 
   # Keep GitHub Actions up to date
   - package-ecosystem: "github-actions"
@@ -20,5 +18,3 @@ updates:
       day: "monday"
     commit-message:
       prefix: "ci"
-    labels:
-      - "github-actions"
