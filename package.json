@@ -15,7 +15,7 @@
     },
     "devDependencies": {
         "@types/bun": "^1.3.5",
-        "@types/chrome": "^0.0.268",
+        "@types/chrome": "^0.1.32",
         "typescript": "^5.3.3"
     }
 }
