@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kriacy Privacy</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <img src="icons/icon.svg" alt="Kriacy" width="32" height="32">
+        <span class="logo-text">Kriacy</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="masterToggle" checked>
+        <span class="slider"></span>
+      </label>
+    </header>
+
+    <!-- Status -->
+    <div class="status-bar" id="statusBar">
+      <span class="status-icon">🛡️</span>
+      <span class="status-text" id="statusText">Protection Active</span>
+    </div>
+
+    <!-- Profile Selector -->
+    <div class="profile-selector">
+      <button class="profile-btn" data-profile="minimal">
+        <span class="profile-icon">⚡</span>
+        <span class="profile-name">Minimal</span>
+      </button>
+      <button class="profile-btn active" data-profile="balanced">
+        <span class="profile-icon">⚖️</span>
+        <span class="profile-name">Balanced</span>
+      </button>
+      <button class="profile-btn" data-profile="aggressive">
+        <span class="profile-icon">🔒</span>
+        <span class="profile-name">Aggressive</span>
+      </button>
+    </div>
+
+    <!-- Randomize Button -->
+    <button class="randomize-btn" id="randomizeBtn">
+      <span>🎲</span>
+      <span>Randomize All</span>
+    </button>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <button class="footer-btn" id="optionsBtn">
+        <span>⚙️</span>
+        <span>Settings</span>
+      </button>
+      <button class="footer-btn" id="logsBtn">
+        <span>📋</span>
+        <span>Logs</span>
+      </button>
+    </footer>
+  </div>
+
+  <script src="popup.js" type="module"></script>
+</body>
+
+</html>

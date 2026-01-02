@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kriacy - Fingerprint Protection Tester</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a24;
+            --bg-card-hover: #22222e;
+            --border-color: #2a2a3a;
+            --text-primary: #f0f0f5;
+            --text-secondary: #888899;
+            --text-muted: #555566;
+            --accent-primary: #6366f1;
+            --accent-secondary: #8b5cf6;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --success: #22c55e;
+            --success-glow: rgba(34, 197, 94, 0.2);
+            --warning: #f59e0b;
+            --warning-glow: rgba(245, 158, 11, 0.2);
+            --danger: #ef4444;
+            --danger-glow: rgba(239, 68, 68, 0.2);
+            --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            --gradient-glow: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Animated background */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 20%, var(--accent-glow) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: var(--gradient-glow);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .logo svg {
+            width: 48px;
+            height: 48px;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* Quick Stats */
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 8px 30px var(--accent-glow);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value.protected {
+            color: var(--success);
+        }
+
+        .stat-value.partial {
+            color: var(--warning);
+        }
+
+        .stat-value.exposed {
+            color: var(--danger);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Section styling */
+        .section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem 2rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .section-header:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .section-title h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .section-icon svg {
+            width: 20px;
+            height: 20px;
+            color: white;
+        }
+
+        .section-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .section-status.protected {
+            background: var(--success-glow);
+            color: var(--success);
+        }
+
+        .section-status.partial {
+            background: var(--warning-glow);
+            color: var(--warning);
+        }
+
+        .section-status.exposed {
+            background: var(--danger-glow);
+            color: var(--danger);
+        }
+
+        .section-content {
+            padding: 2rem;
+        }
+
+        /* Test results */
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .test-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            transition: all 0.2s ease;
+        }
+
+        .test-item:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--text-muted);
+        }
+
+        .test-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .test-value {
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            word-break: break-all;
+            background: var(--bg-primary);
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .test-value.long-text {
+            font-size: 0.75rem;
+        }
+
+        .test-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .test-indicator.protected {
+            background: var(--success);
+            box-shadow: 0 0 8px var(--success);
+        }
+
+        .test-indicator.exposed {
+            background: var(--danger);
+            box-shadow: 0 0 8px var(--danger);
+        }
+
+        .test-indicator.partial {
+            background: var(--warning);
+            box-shadow: 0 0 8px var(--warning);
+        }
+
+        /* Canvas display */
+        .canvas-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .canvas-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .canvas-card h4 {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .canvas-card canvas {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .hash-value {
+            margin-top: 0.75rem;
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: var(--accent-primary);
+            word-break: break-all;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 0.875rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--accent-glow);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--accent-primary);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Loading spinner */
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--text-muted);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .logo {
+                font-size: 1.75rem;
+            }
+
+            .section-header {
+                padding: 1rem 1.25rem;
+            }
+
+            .section-content {
+                padding: 1.25rem;
+            }
+
+            .test-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-pattern"></div>
+
+    <div class="container">
+        <header>
+            <div class="logo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="url(#gradient1)" />
+                    <defs>
+                        <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#6366f1" />
+                            <stop offset="100%" stop-color="#8b5cf6" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                Kriacy Testing Utility
+            </div>
+            <p>Comprehensive fingerprinting protection analysis</p>
+        </header>
+
+        <div class="quick-stats" id="quickStats">
+            <div class="stat-card">
+                <div class="stat-value" id="totalTests">--</div>
+                <div class="stat-label">Total Tests</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value protected" id="protectedCount">--</div>
+                <div class="stat-label">Protected</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value partial" id="partialCount">--</div>
+                <div class="stat-label">Partial</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value exposed" id="exposedCount">--</div>
+                <div class="stat-label">Exposed</div>
+            </div>
+        </div>
+
+        <!-- Canvas Fingerprint Section -->
+        <div class="section" id="canvasSection">
+            <div class="section-header" onclick="toggleSection('canvasSection')">
+                <div class="section-title">
+                    <div class="section-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" stroke="white" />
+                            <circle cx="8.5" cy="8.5" r="1.5" fill="white" />
+                            <path d="M21 15l-5-5L5 21" stroke="white" />
+                        </svg>
+                    </div>
+                    <h2>Canvas Fingerprint</h2>
+                </div>
+                <div class="section-status" id="canvasStatus">Testing...</div>
+            </div>
+            <div class="section-content">
+                <div class="canvas-container" id="canvasResults"></div>
+            </div>
+        </div>
+
+        <!-- WebGL Section -->
+        <div class="section" id="webglSection">
+            <div class="section-header" onclick="toggleSection('webglSection')">
+                <div class="section-title">
+                    <div class="section-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 2 7 12 12 22 7 12 2" stroke="white" />
+                            <polyline points="2 17 12 22 22 17" stroke="white" />
+                            <polyline points="2 12 12 17 22 12" stroke="white" />
+                        </svg>
+                    </div>
+                    <h2>WebGL Fingerprint</h2>
+                </div>
+                <div class="section-status" id="webglStatus">Testing...</div>
+            </div>
+            <div class="section-content">
+                <div class="test-grid" id="webglResults"></div>
+            </div>
+        </div>
+
+        <!-- Audio Fingerprint Section -->
+        <div class="section" id="audioSection">
+            <div class="section-header" onclick="toggleSection('audioSection')">
+                <div class="section-title">
+                    <div class="section-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 18V5l12-2v13" stroke="white" />
+                            <circle cx="6" cy="18" r="3" stroke="white" />
+                            <circle cx="18" cy="16" r="3" stroke="white" />
+                        </svg>
+                    </div>
+                    <h2>Audio Fingerprint</h2>
+                </div>
+                <div class="section-status" id="audioStatus">Testing...</div>
+            </div>
+            <div class="section-content">
+                <div class="test-grid" id="audioResults"></div>
+            </div>
+        </div>
+
+        <!-- Navigator Section -->
+        <div class="section" id="navigatorSection">
+            <div class="section-header" onclick="toggleSection('navigatorSection')">
+                <div class="section-title">
+                    <div class="section-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10" stroke="white" />
+                            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" stroke="white" />
+                        </svg>
+                    </div>
+                    <h2>Navigator Properties</h2>
+                </div>
+                <div class="section-status" id="navigatorStatus">Testing...</div>
+            </div>
+            <div class="section-content">
+                <div class="test-grid" id="navigatorResults"></div>
+            </div>
+        </div>
+
+        <!-- Screen Section -->
+        <div class="section" id="screenSection">
+            <div class="section-header" onclick="toggleSection('screenSection')">
+                <div class="section-title">
+                    <div class="section-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="3" width="20" height="14" rx="2" stroke="white" />
+                            <line x1="8" y1="21" x2="16" y2="21" stroke="white" />
+                            <line x1="12" y1="17" x2="12" y2="21" stroke="white" />
+                        </svg>
+                    </div>
+                    <h2>Screen Properties</h2>
+                </div>
+                <div class="section-status" id="screenStatus">Testing...</div>
+            </div>
+            <div class="section-content">
+                <div class="test-grid" id="screenResults"></div>
+            </div>
+        </div>
+
+        <!-- Timezone Section -->
+        <div class="section" id="timezoneSection">
+            <div class="section-header" onclick="toggleSection('timezoneSection')">
+                <div class="section-title">
+                    <div class="section-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10" stroke="white" />
+                            <polyline points="12 6 12 12 16 14" stroke="white" />
+                        </svg>
+                    </div>
+                    <h2>Timezone & Date</h2>
+                </div>
+                <div class="section-status" id="timezoneStatus">Testing...</div>
+            </div>
+            <div class="section-content">
+                <div class="test-grid" id="timezoneResults"></div>
+            </div>
+        </div>
+
+        <!-- Media Devices Section -->
+        <div class="section" id="mediaSection">
+            <div class="section-header" onclick="toggleSection('mediaSection')">
+                <div class="section-title">
+                    <div class="section-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 7l-7 5 7 5V7z" stroke="white" />
+                            <rect x="1" y="5" width="15" height="14" rx="2" stroke="white" />
+                        </svg>
+                    </div>
+                    <h2>Media Devices</h2>
+                </div>
+                <div class="section-status" id="mediaStatus">Testing...</div>
+            </div>
+            <div class="section-content">
+                <div class="test-grid" id="mediaResults"></div>
+            </div>
+        </div>
+
+        <!-- Fonts Section -->
+        <div class="section" id="fontsSection">
+            <div class="section-header" onclick="toggleSection('fontsSection')">
+                <div class="section-title">
+                    <div class="section-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="4 7 4 4 20 4 20 7" stroke="white" />
+                            <line x1="9" y1="20" x2="15" y2="20" stroke="white" />
+                            <line x1="12" y1="4" x2="12" y2="20" stroke="white" />
+                        </svg>
+                    </div>
+                    <h2>Font Detection</h2>
+                </div>
+                <div class="section-status" id="fontsStatus">Testing...</div>
+            </div>
+            <div class="section-content">
+                <div class="test-grid" id="fontsResults"></div>
+            </div>
+        </div>
+
+        <!-- Network Section -->
+        <div class="section" id="networkSection">
+            <div class="section-header" onclick="toggleSection('networkSection')">
+                <div class="section-title">
+                    <div class="section-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12.55a11 11 0 0 1 14.08 0" stroke="white" />
+                            <path d="M1.42 9a16 16 0 0 1 21.16 0" stroke="white" />
+                            <path d="M8.53 16.11a6 6 0 0 1 6.95 0" stroke="white" />
+                            <line x1="12" y1="20" x2="12.01" y2="20" stroke="white" stroke-width="3" />
+                        </svg>
+                    </div>
+                    <h2>Network & Battery</h2>
+                </div>
+                <div class="section-status" id="networkStatus">Testing...</div>
+            </div>
+            <div class="section-content">
+                <div class="test-grid" id="networkResults"></div>
+            </div>
+        </div>
+
+        <!-- Client Rects Section -->
+        <div class="section" id="rectsSection">
+            <div class="section-header" onclick="toggleSection('rectsSection')">
+                <div class="section-title">
+                    <div class="section-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7" stroke="white" />
+                            <rect x="14" y="3" width="7" height="7" stroke="white" />
+                            <rect x="14" y="14" width="7" height="7" stroke="white" />
+                            <rect x="3" y="14" width="7" height="7" stroke="white" />
+                        </svg>
+                    </div>
+                    <h2>Client Rects</h2>
+                </div>
+                <div class="section-status" id="rectsStatus">Testing...</div>
+            </div>
+            <div class="section-content">
+                <div class="test-grid" id="rectsResults"></div>
+                <div style="margin-top: 1rem; opacity: 0;">
+                    <span id="testElement" style="font-family: Arial; font-size: 16px;">Test Text for Client
+                        Rects</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- WebRTC Section -->
+        <div class="section" id="webrtcSection">
+            <div class="section-header" onclick="toggleSection('webrtcSection')">
+                <div class="section-title">
+                    <div class="section-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="white" />
+                            <circle cx="9" cy="7" r="4" stroke="white" />
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="white" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="white" />
+                        </svg>
+                    </div>
+                    <h2>WebRTC Leak Test</h2>
+                </div>
+                <div class="section-status" id="webrtcStatus">Testing...</div>
+            </div>
+            <div class="section-content">
+                <div class="test-grid" id="webrtcResults"></div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="runAllTests()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 4v6h-6" />
+                    <path d="M1 20v-6h6" />
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                </svg>
+                Re-run All Tests
+            </button>
+            <button class="btn btn-secondary" onclick="exportResults()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Export Results
+            </button>
+            <button class="btn btn-secondary" onclick="compareFingerprints()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+                Compare Sessions
+            </button>
+        </div>
+
+        <footer>
+            <p>Kriacy Fingerprint Protection Tester • Made with ❤️ by <a href="https://kristof.best"
+                    target="_blank">Kristof</a></p>
+            <p style="margin-top: 0.5rem; font-size: 0.8rem;">Session ID: <span id="sessionId"></span></p>
+        </footer>
+    </div>
+
+    <script>
+        // Results storage
+        const results = {
+            canvas: {},
+            webgl: {},
+            audio: {},
+            navigator: {},
+            screen: {},
+            timezone: {},
+            media: {},
+            fonts: {},
+            network: {},
+            rects: {},
+            webrtc: {}
+        };
+
+        let sessionId = Math.random().toString(36).substring(2, 10);
+        document.getElementById('sessionId').textContent = sessionId;
+
+        // Toggle section visibility
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            const content = section.querySelector('.section-content');
+            content.style.display = content.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Set section status
+        function setStatus(sectionId, status) {
+            const statusEl = document.getElementById(sectionId + 'Status');
+            statusEl.className = 'section-status ' + status;
+            statusEl.textContent = status === 'protected' ? '✓ Protected' :
+                status === 'partial' ? '⚠ Partial' :
+                    status === 'exposed' ? '✗ Exposed' : 'Testing...';
+        }
+
+        // Create test item HTML
+        function createTestItem(label, value, status = 'neutral') {
+            const indicator = status !== 'neutral' ?
+                `<span class="test-indicator ${status}"></span>` : '';
+            const valueClass = value && value.length > 50 ? 'test-value long-text' : 'test-value';
+            return `
+                <div class="test-item">
+                    <div class="test-label">${indicator}${label}</div>
+                    <div class="${valueClass}">${value || 'N/A'}</div>
+                </div>
+            `;
+        }
+
+        // Simple hash function for fingerprints
+        async function hashString(str) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(str);
+            const hash = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hash))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        // ==================================
+        // CANVAS FINGERPRINT TESTS
+        // ==================================
+        async function testCanvas() {
+            const container = document.getElementById('canvasResults');
+            container.innerHTML = '<div class="loading"></div> Running canvas tests...';
+
+            try {
+                // Text Canvas
+                const textCanvas = document.createElement('canvas');
+                textCanvas.width = 300;
+                textCanvas.height = 100;
+                const textCtx = textCanvas.getContext('2d');
+                textCtx.textBaseline = 'top';
+                textCtx.font = '14px Arial';
+                textCtx.fillStyle = '#f60';
+                textCtx.fillRect(0, 0, 300, 100);
+                textCtx.fillStyle = '#069';
+                textCtx.fillText('Kriacy Fingerprint Test 🔒', 2, 15);
+                textCtx.fillStyle = 'rgba(102, 204, 0, 0.7)';
+                textCtx.fillText('Canvas fingerprinting check', 4, 45);
+                const textData = textCanvas.toDataURL();
+                const textHash = await hashString(textData);
+
+                // Geometry Canvas
+                const geoCanvas = document.createElement('canvas');
+                geoCanvas.width = 200;
+                geoCanvas.height = 200;
+                const geoCtx = geoCanvas.getContext('2d');
+                geoCtx.beginPath();
+                geoCtx.arc(100, 100, 50, 0, Math.PI * 2);
+                geoCtx.fillStyle = 'rgba(99, 102, 241, 0.8)';
+                geoCtx.fill();
+                geoCtx.beginPath();
+                geoCtx.moveTo(50, 150);
+                geoCtx.lineTo(150, 150);
+                geoCtx.lineTo(100, 50);
+                geoCtx.closePath();
+                geoCtx.strokeStyle = '#8b5cf6';
+                geoCtx.lineWidth = 3;
+                geoCtx.stroke();
+                const geoData = geoCanvas.toDataURL();
+                const geoHash = await hashString(geoData);
+
+                // WebGL Canvas (if available)
+                let webglData = 'N/A';
+                let webglHash = 'N/A';
+                try {
+                    const webglCanvas = document.createElement('canvas');
+                    webglCanvas.width = 200;
+                    webglCanvas.height = 200;
+                    const gl = webglCanvas.getContext('webgl');
+                    if (gl) {
+                        gl.clearColor(0.4, 0.2, 0.8, 1.0);
+                        gl.clear(gl.COLOR_BUFFER_BIT);
+                        webglData = webglCanvas.toDataURL();
+                        webglHash = await hashString(webglData);
+                    }
+                } catch (e) { }
+
+                results.canvas = { textHash, geoHash, webglHash };
+
+                container.innerHTML = `
+                    <div class="canvas-card">
+                        <h4>Text Rendering</h4>
+                        <canvas id="textCanvasDisplay"></canvas>
+                        <div class="hash-value">Hash: ${textHash.substring(0, 32)}...</div>
+                    </div>
+                    <div class="canvas-card">
+                        <h4>Geometry Rendering</h4>
+                        <canvas id="geoCanvasDisplay"></canvas>
+                        <div class="hash-value">Hash: ${geoHash.substring(0, 32)}...</div>
+                    </div>
+                    <div class="canvas-card">
+                        <h4>WebGL Rendering</h4>
+                        <canvas id="webglCanvasDisplay"></canvas>
+                        <div class="hash-value">Hash: ${webglHash !== 'N/A' ? webglHash.substring(0, 32) + '...' : 'N/A'}</div>
+                    </div>
+                `;
+
+                // Copy canvases to display
+                const displayText = document.getElementById('textCanvasDisplay');
+                displayText.width = textCanvas.width;
+                displayText.height = textCanvas.height;
+                displayText.getContext('2d').drawImage(textCanvas, 0, 0);
+
+                const displayGeo = document.getElementById('geoCanvasDisplay');
+                displayGeo.width = geoCanvas.width;
+                displayGeo.height = geoCanvas.height;
+                displayGeo.getContext('2d').drawImage(geoCanvas, 0, 0);
+
+                setStatus('canvas', 'protected');
+            } catch (e) {
+                container.innerHTML = createTestItem('Error', e.message, 'exposed');
+                setStatus('canvas', 'exposed');
+            }
+        }
+
+        // ==================================
+        // WEBGL FINGERPRINT TESTS
+        // ==================================
+        function testWebGL() {
+            const container = document.getElementById('webglResults');
+            container.innerHTML = '<div class="loading"></div> Running WebGL tests...';
+
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+
+                if (!gl) {
+                    container.innerHTML = createTestItem('WebGL', 'Not supported', 'partial');
+                    setStatus('webgl', 'partial');
+                    return;
+                }
+
+                const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+
+                results.webgl = {
+                    vendor: gl.getParameter(gl.VENDOR),
+                    renderer: gl.getParameter(gl.RENDERER),
+                    unmaskedVendor: debugInfo ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : 'N/A',
+                    unmaskedRenderer: debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : 'N/A',
+                    version: gl.getParameter(gl.VERSION),
+                    shadingLanguage: gl.getParameter(gl.SHADING_LANGUAGE_VERSION),
+                    maxTextureSize: gl.getParameter(gl.MAX_TEXTURE_SIZE),
+                    maxViewportDims: gl.getParameter(gl.MAX_VIEWPORT_DIMS)?.join(' x '),
+                    extensions: gl.getSupportedExtensions()?.length || 0
+                };
+
+                container.innerHTML = `
+                    ${createTestItem('Vendor', results.webgl.vendor)}
+                    ${createTestItem('Renderer', results.webgl.renderer)}
+                    ${createTestItem('Unmasked Vendor', results.webgl.unmaskedVendor)}
+                    ${createTestItem('Unmasked Renderer', results.webgl.unmaskedRenderer)}
+                    ${createTestItem('WebGL Version', results.webgl.version)}
+                    ${createTestItem('Shading Language', results.webgl.shadingLanguage)}
+                    ${createTestItem('Max Texture Size', results.webgl.maxTextureSize)}
+                    ${createTestItem('Max Viewport', results.webgl.maxViewportDims)}
+                    ${createTestItem('Extensions Count', results.webgl.extensions)}
+                `;
+
+                setStatus('webgl', 'protected');
+            } catch (e) {
+                container.innerHTML = createTestItem('Error', e.message, 'exposed');
+                setStatus('webgl', 'exposed');
+            }
+        }
+
+        // ==================================
+        // AUDIO FINGERPRINT TESTS
+        // ==================================
+        async function testAudio() {
+            const container = document.getElementById('audioResults');
+            container.innerHTML = '<div class="loading"></div> Running audio tests...';
+
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const analyser = audioContext.createAnalyser();
+                const gainNode = audioContext.createGain();
+                const scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
+
+                oscillator.type = 'triangle';
+                oscillator.frequency.setValueAtTime(10000, audioContext.currentTime);
+
+                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+
+                oscillator.connect(analyser);
+                analyser.connect(scriptProcessor);
+                scriptProcessor.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.start(0);
+
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                const bins = new Float32Array(analyser.frequencyBinCount);
+                analyser.getFloatFrequencyData(bins);
+
+                const sum = bins.reduce((a, b) => a + b, 0);
+                const audioHash = await hashString(sum.toString());
+
+                oscillator.stop();
+                audioContext.close();
+
+                results.audio = {
+                    sampleRate: audioContext.sampleRate,
+                    channelCount: audioContext.destination.channelCount,
+                    frequencyBins: analyser.frequencyBinCount,
+                    audioHash: audioHash
+                };
+
+                container.innerHTML = `
+                    ${createTestItem('Sample Rate', results.audio.sampleRate + ' Hz')}
+                    ${createTestItem('Channel Count', results.audio.channelCount)}
+                    ${createTestItem('Frequency Bins', results.audio.frequencyBins)}
+                    ${createTestItem('Audio Hash', audioHash.substring(0, 32) + '...')}
+                `;
+
+                setStatus('audio', 'protected');
+            } catch (e) {
+                container.innerHTML = createTestItem('Error', e.message, 'partial');
+                setStatus('audio', 'partial');
+            }
+        }
+
+        // ==================================
+        // NAVIGATOR TESTS
+        // ==================================
+        function testNavigator() {
+            const container = document.getElementById('navigatorResults');
+
+            results.navigator = {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+                languages: navigator.languages?.join(', '),
+                cookieEnabled: navigator.cookieEnabled,
+                doNotTrack: navigator.doNotTrack,
+                hardwareConcurrency: navigator.hardwareConcurrency,
+                maxTouchPoints: navigator.maxTouchPoints,
+                deviceMemory: navigator.deviceMemory || 'N/A',
+                vendor: navigator.vendor,
+                plugins: navigator.plugins?.length || 0,
+                mimeTypes: navigator.mimeTypes?.length || 0,
+                webdriver: navigator.webdriver
+            };
+
+            container.innerHTML = `
+                ${createTestItem('User Agent', results.navigator.userAgent)}
+                ${createTestItem('Platform', results.navigator.platform)}
+                ${createTestItem('Language', results.navigator.language)}
+                ${createTestItem('Languages', results.navigator.languages)}
+                ${createTestItem('Cookie Enabled', results.navigator.cookieEnabled)}
+                ${createTestItem('Do Not Track', results.navigator.doNotTrack || 'null')}
+                ${createTestItem('Hardware Concurrency', results.navigator.hardwareConcurrency)}
+                ${createTestItem('Max Touch Points', results.navigator.maxTouchPoints)}
+                ${createTestItem('Device Memory', results.navigator.deviceMemory + ' GB')}
+                ${createTestItem('Vendor', results.navigator.vendor)}
+                ${createTestItem('Plugins Count', results.navigator.plugins)}
+                ${createTestItem('MIME Types Count', results.navigator.mimeTypes)}
+                ${createTestItem('WebDriver', results.navigator.webdriver, results.navigator.webdriver ? 'exposed' : 'protected')}
+            `;
+
+            setStatus('navigator', 'protected');
+        }
+
+        // ==================================
+        // SCREEN TESTS
+        // ==================================
+        function testScreen() {
+            const container = document.getElementById('screenResults');
+
+            results.screen = {
+                width: screen.width,
+                height: screen.height,
+                availWidth: screen.availWidth,
+                availHeight: screen.availHeight,
+                colorDepth: screen.colorDepth,
+                pixelDepth: screen.pixelDepth,
+                devicePixelRatio: window.devicePixelRatio,
+                orientation: screen.orientation?.type || 'N/A',
+                innerWidth: window.innerWidth,
+                innerHeight: window.innerHeight,
+                outerWidth: window.outerWidth,
+                outerHeight: window.outerHeight
+            };
+
+            container.innerHTML = `
+                ${createTestItem('Screen Resolution', `${results.screen.width} x ${results.screen.height}`)}
+                ${createTestItem('Available Resolution', `${results.screen.availWidth} x ${results.screen.availHeight}`)}
+                ${createTestItem('Color Depth', results.screen.colorDepth + ' bits')}
+                ${createTestItem('Pixel Depth', results.screen.pixelDepth + ' bits')}
+                ${createTestItem('Device Pixel Ratio', results.screen.devicePixelRatio)}
+                ${createTestItem('Orientation', results.screen.orientation)}
+                ${createTestItem('Viewport Size', `${results.screen.innerWidth} x ${results.screen.innerHeight}`)}
+                ${createTestItem('Window Outer Size', `${results.screen.outerWidth} x ${results.screen.outerHeight}`)}
+            `;
+
+            setStatus('screen', 'protected');
+        }
+
+        // ==================================
+        // TIMEZONE TESTS
+        // ==================================
+        function testTimezone() {
+            const container = document.getElementById('timezoneResults');
+
+            const date = new Date();
+
+            results.timezone = {
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                timezoneOffset: date.getTimezoneOffset(),
+                locale: Intl.DateTimeFormat().resolvedOptions().locale,
+                dateString: date.toDateString(),
+                timeString: date.toTimeString(),
+                localeString: date.toLocaleString(),
+                isoString: date.toISOString()
+            };
+
+            container.innerHTML = `
+                ${createTestItem('Timezone', results.timezone.timezone)}
+                ${createTestItem('Timezone Offset', results.timezone.timezoneOffset + ' minutes')}
+                ${createTestItem('Locale', results.timezone.locale)}
+                ${createTestItem('Date String', results.timezone.dateString)}
+                ${createTestItem('Time String', results.timezone.timeString)}
+                ${createTestItem('Locale String', results.timezone.localeString)}
+                ${createTestItem('ISO String', results.timezone.isoString)}
+            `;
+
+            setStatus('timezone', 'protected');
+        }
+
+        // ==================================
+        // MEDIA DEVICES TESTS
+        // ==================================
+        async function testMedia() {
+            const container = document.getElementById('mediaResults');
+            container.innerHTML = '<div class="loading"></div> Running media tests...';
+
+            try {
+                let devices = [];
+                if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+                    devices = await navigator.mediaDevices.enumerateDevices();
+                }
+
+                const speechVoices = window.speechSynthesis ?
+                    window.speechSynthesis.getVoices().length : 'N/A';
+
+                results.media = {
+                    deviceCount: devices.length,
+                    audioInputs: devices.filter(d => d.kind === 'audioinput').length,
+                    audioOutputs: devices.filter(d => d.kind === 'audiooutput').length,
+                    videoInputs: devices.filter(d => d.kind === 'videoinput').length,
+                    speechVoices: speechVoices
+                };
+
+                container.innerHTML = `
+                    ${createTestItem('Total Devices', results.media.deviceCount)}
+                    ${createTestItem('Audio Inputs (Mics)', results.media.audioInputs)}
+                    ${createTestItem('Audio Outputs (Speakers)', results.media.audioOutputs)}
+                    ${createTestItem('Video Inputs (Cameras)', results.media.videoInputs)}
+                    ${createTestItem('Speech Voices', results.media.speechVoices)}
+                `;
+
+                setStatus('media', 'protected');
+            } catch (e) {
+                container.innerHTML = createTestItem('Error', e.message, 'partial');
+                setStatus('media', 'partial');
+            }
+        }
+
+        // ==================================
+        // FONT DETECTION TESTS
+        // ==================================
+        function testFonts() {
+            const container = document.getElementById('fontsResults');
+
+            const testFonts = [
+                'Arial', 'Arial Black', 'Comic Sans MS', 'Courier New', 'Georgia',
+                'Impact', 'Lucida Console', 'Palatino Linotype', 'Tahoma', 'Times New Roman',
+                'Trebuchet MS', 'Verdana', 'Webdings', 'Wingdings', 'MS Gothic',
+                'MS PGothic', 'MS Mincho', 'PMingLiU', 'SimHei', 'SimSun'
+            ];
+
+            const baseFonts = ['monospace', 'sans-serif', 'serif'];
+            const testString = 'mmmmmmmmmmlli';
+            const testSize = '72px';
+
+            const span = document.createElement('span');
+            span.style.fontSize = testSize;
+            span.style.position = 'absolute';
+            span.style.left = '-9999px';
+            span.style.visibility = 'hidden';
+            span.textContent = testString;
+            document.body.appendChild(span);
+
+            const baseWidths = {};
+            baseFonts.forEach(font => {
+                span.style.fontFamily = font;
+                baseWidths[font] = span.offsetWidth;
+            });
+
+            const detected = [];
+            testFonts.forEach(font => {
+                let isDetected = false;
+                baseFonts.forEach(baseFont => {
+                    span.style.fontFamily = `'${font}', ${baseFont}`;
+                    if (span.offsetWidth !== baseWidths[baseFont]) {
+                        isDetected = true;
+                    }
+                });
+                if (isDetected) detected.push(font);
+            });
+
+            document.body.removeChild(span);
+
+            results.fonts = {
+                detectedCount: detected.length,
+                detectedFonts: detected
+            };
+
+            container.innerHTML = `
+                ${createTestItem('Detected Fonts', detected.length + '/' + testFonts.length)}
+                ${createTestItem('Font List', detected.join(', ') || 'None detected')}
+            `;
+
+            setStatus('fonts', 'protected');
+        }
+
+        // ==================================
+        // NETWORK & BATTERY TESTS
+        // ==================================
+        async function testNetwork() {
+            const container = document.getElementById('networkResults');
+            container.innerHTML = '<div class="loading"></div> Running network tests...';
+
+            results.network = {
+                online: navigator.onLine,
+                connection: 'N/A',
+                effectiveType: 'N/A',
+                downlink: 'N/A',
+                rtt: 'N/A',
+                battery: 'N/A'
+            };
+
+            // Network Information API
+            if (navigator.connection) {
+                results.network.effectiveType = navigator.connection.effectiveType;
+                results.network.downlink = navigator.connection.downlink + ' Mbps';
+                results.network.rtt = navigator.connection.rtt + ' ms';
+            }
+
+            // Battery API
+            try {
+                if (navigator.getBattery) {
+                    const battery = await navigator.getBattery();
+                    results.network.battery = `${Math.round(battery.level * 100)}% (${battery.charging ? 'Charging' : 'Not Charging'})`;
+                }
+            } catch (e) { }
+
+            container.innerHTML = `
+                ${createTestItem('Online Status', results.network.online ? 'Online' : 'Offline')}
+                ${createTestItem('Effective Type', results.network.effectiveType)}
+                ${createTestItem('Downlink', results.network.downlink)}
+                ${createTestItem('RTT', results.network.rtt)}
+                ${createTestItem('Battery', results.network.battery)}
+            `;
+
+            setStatus('network', 'protected');
+        }
+
+        // ==================================
+        // CLIENT RECTS TESTS
+        // ==================================
+        function testClientRects() {
+            const container = document.getElementById('rectsResults');
+            const testEl = document.getElementById('testElement');
+
+            const rect = testEl.getBoundingClientRect();
+            const rects = testEl.getClientRects();
+
+            results.rects = {
+                boundingRect: `x: ${rect.x.toFixed(4)}, y: ${rect.y.toFixed(4)}, w: ${rect.width.toFixed(4)}, h: ${rect.height.toFixed(4)}`,
+                clientRectsCount: rects.length,
+                firstRect: rects[0] ? `w: ${rects[0].width.toFixed(4)}, h: ${rects[0].height.toFixed(4)}` : 'N/A'
+            };
+
+            container.innerHTML = `
+                ${createTestItem('Bounding Rect', results.rects.boundingRect)}
+                ${createTestItem('Client Rects Count', results.rects.clientRectsCount)}
+                ${createTestItem('First Rect Dimensions', results.rects.firstRect)}
+            `;
+
+            setStatus('rects', 'protected');
+        }
+
+        // ==================================
+        // WEBRTC LEAK TESTS
+        // ==================================
+        async function testWebRTC() {
+            const container = document.getElementById('webrtcResults');
+            container.innerHTML = '<div class="loading"></div> Running WebRTC tests...';
+
+            const ips = new Set();
+
+            try {
+                const pc = new RTCPeerConnection({
+                    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+                });
+
+                pc.createDataChannel('');
+
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+
+                await new Promise((resolve) => {
+                    pc.onicecandidate = (e) => {
+                        if (!e.candidate) {
+                            resolve();
+                            return;
+                        }
+
+                        const parts = e.candidate.candidate.split(' ');
+                        const ip = parts[4];
+                        if (ip && ip !== '0.0.0.0') {
+                            ips.add(ip);
+                        }
+                    };
+
+                    setTimeout(resolve, 3000);
+                });
+
+                pc.close();
+
+                results.webrtc = {
+                    ipsFound: ips.size,
+                    ips: Array.from(ips)
+                };
+
+                const ipList = results.webrtc.ips.length > 0 ?
+                    results.webrtc.ips.join(', ') : 'No IPs leaked ✓';
+
+                const status = results.webrtc.ipsFound === 0 ? 'protected' : 'exposed';
+
+                container.innerHTML = `
+                    ${createTestItem('IPs Found', results.webrtc.ipsFound, status)}
+                    ${createTestItem('Leaked IPs', ipList, status)}
+                `;
+
+                setStatus('webrtc', status);
+            } catch (e) {
+                container.innerHTML = createTestItem('WebRTC', 'Blocked or not supported', 'protected');
+                setStatus('webrtc', 'protected');
+            }
+        }
+
+        // ==================================
+        // UPDATE STATS
+        // ==================================
+        function updateStats() {
+            const sections = ['canvas', 'webgl', 'audio', 'navigator', 'screen', 'timezone', 'media', 'fonts', 'network', 'rects', 'webrtc'];
+            let protected = 0, partial = 0, exposed = 0;
+
+            sections.forEach(section => {
+                const statusEl = document.getElementById(section + 'Status');
+                if (statusEl.classList.contains('protected')) protected++;
+                else if (statusEl.classList.contains('partial')) partial++;
+                else if (statusEl.classList.contains('exposed')) exposed++;
+            });
+
+            document.getElementById('totalTests').textContent = sections.length;
+            document.getElementById('protectedCount').textContent = protected;
+            document.getElementById('partialCount').textContent = partial;
+            document.getElementById('exposedCount').textContent = exposed;
+        }
+
+        // ==================================
+        // RUN ALL TESTS
+        // ==================================
+        async function runAllTests() {
+            sessionId = Math.random().toString(36).substring(2, 10);
+            document.getElementById('sessionId').textContent = sessionId;
+
+            // Reset stats
+            document.getElementById('totalTests').textContent = '--';
+            document.getElementById('protectedCount').textContent = '--';
+            document.getElementById('partialCount').textContent = '--';
+            document.getElementById('exposedCount').textContent = '--';
+
+            // Run tests
+            await testCanvas();
+            testWebGL();
+            await testAudio();
+            testNavigator();
+            testScreen();
+            testTimezone();
+            await testMedia();
+            testFonts();
+            await testNetwork();
+            testClientRects();
+            await testWebRTC();
+
+            updateStats();
+        }
+
+        // ==================================
+        // EXPORT RESULTS
+        // ==================================
+        function exportResults() {
+            const exportData = {
+                sessionId,
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                results
+            };
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `kriacy-fingerprint-${sessionId}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // ==================================
+        // COMPARE FINGERPRINTS
+        // ==================================
+        function compareFingerprints() {
+            const stored = localStorage.getItem('kriacy_fingerprint');
+            const current = JSON.stringify(results);
+
+            if (!stored) {
+                localStorage.setItem('kriacy_fingerprint', current);
+                alert('First fingerprint stored! Run the tests again to compare.');
+                return;
+            }
+
+            const previous = JSON.parse(stored);
+            let differences = [];
+
+            function compare(obj1, obj2, path = '') {
+                for (const key in obj1) {
+                    const newPath = path ? `${path}.${key}` : key;
+                    if (typeof obj1[key] === 'object' && obj1[key] !== null) {
+                        compare(obj1[key], obj2?.[key] || {}, newPath);
+                    } else if (obj1[key] !== obj2?.[key]) {
+                        differences.push({
+                            path: newPath,
+                            previous: obj2?.[key],
+                            current: obj1[key]
+                        });
+                    }
+                }
+            }
+
+            compare(results, previous);
+
+            if (differences.length === 0) {
+                alert('✓ Fingerprints are identical! (Same session detected)');
+            } else {
+                alert(`Found ${differences.length} differences between sessions!\n\nThis indicates your fingerprint is being randomized.\n\nCheck console for details.`);
+                console.table(differences);
+            }
+
+            localStorage.setItem('kriacy_fingerprint', current);
+        }
+
+        // Initialize on load
+        window.addEventListener('load', runAllTests);
+    </script>
+</body>
+
+</html>

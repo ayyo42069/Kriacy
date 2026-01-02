@@ -1,0 +1,69 @@
+[
+    {
+        "id": 1,
+        "priority": 1,
+        "action": {
+            "type": "modifyHeaders",
+            "requestHeaders": [
+                {
+                    "header": "Sec-CH-DPR",
+                    "operation": "set",
+                    "value": "1"
+                },
+                {
+                    "header": "Sec-CH-UA-Platform-Version",
+                    "operation": "remove"
+                },
+                {
+                    "header": "Sec-CH-UA-Full-Version-List",
+                    "operation": "remove"
+                },
+                {
+                    "header": "Sec-CH-UA-Arch",
+                    "operation": "remove"
+                },
+                {
+                    "header": "Sec-CH-UA-Bitness",
+                    "operation": "remove"
+                },
+                {
+                    "header": "Sec-CH-UA-Model",
+                    "operation": "remove"
+                },
+                {
+                    "header": "Sec-CH-Viewport-Width",
+                    "operation": "remove"
+                },
+                {
+                    "header": "Sec-CH-Viewport-Height",
+                    "operation": "remove"
+                },
+                {
+                    "header": "Sec-CH-Device-Memory",
+                    "operation": "set",
+                    "value": "8"
+                }
+            ]
+        },
+        "condition": {
+            "urlFilter": "*",
+            "resourceTypes": [
+                "main_frame",
+                "sub_frame",
+                "stylesheet",
+                "script",
+                "image",
+                "font",
+                "object",
+                "xmlhttprequest",
+                "ping",
+                "csp_report",
+                "media",
+                "websocket",
+                "webtransport",
+                "webbundle",
+                "other"
+            ]
+        }
+    }
+]

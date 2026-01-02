@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kriacy - Spoof Access Logs</title>
+    <link rel="stylesheet" href="logs.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="16" cy="16" r="14" fill="currentColor" opacity="0.15" />
+                            <path d="M12 8V24H15V17L21 24H25L18 16L24 8H20L15 15V8H12Z" fill="currentColor" />
+                        </svg>
+                    </div>
+                    <h1>Kriacy Logs</h1>
+                </div>
+                <p class="subtitle">Spoof Access Activity Monitor</p>
+            </div>
+        </header>
+
+        <!-- Controls -->
+        <div class="controls">
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="apiFilter">Filter by API:</label>
+                    <select id="apiFilter">
+                        <option value="all">All APIs</option>
+                        <option value="canvas">Canvas</option>
+                        <option value="webgl">WebGL</option>
+                        <option value="audio">Audio</option>
+                        <option value="navigator">Navigator</option>
+                        <option value="screen">Screen</option>
+                        <option value="geolocation">Geolocation</option>
+                        <option value="webrtc">WebRTC</option>
+                        <option value="timezone">Timezone</option>
+                        <option value="battery">Battery</option>
+                        <option value="network">Network</option>
+                        <option value="fonts">Fonts</option>
+                        <option value="media">Media</option>
+                        <option value="misc">Misc</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="searchInput">Search URL:</label>
+                    <input type="text" id="searchInput" placeholder="Filter by URL...">
+                </div>
+            </div>
+            <div class="actions">
+                <button id="refreshBtn" class="btn btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="16"
+                        height="16">
+                        <path fill-rule="evenodd"
+                            d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Refresh
+                </button>
+                <button id="exportBtn" class="btn btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="16"
+                        height="16">
+                        <path fill-rule="evenodd"
+                            d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Export
+                </button>
+                <button id="clearBtn" class="btn btn-danger">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="16"
+                        height="16">
+                        <path fill-rule="evenodd"
+                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Clear All
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card">
+                <span class="stat-value" id="totalLogs">0</span>
+                <span class="stat-label">Total Logs</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="uniqueSites">0</span>
+                <span class="stat-label">Unique Sites</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="topApi">-</span>
+                <span class="stat-label">Most Accessed API</span>
+            </div>
+        </div>
+
+        <!-- Logs Table -->
+        <div class="logs-container">
+            <table class="logs-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Count</th>
+                        <th>Site</th>
+                        <th>API</th>
+                        <th>Method</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody id="logsBody">
+                    <!-- Logs will be inserted here -->
+                </tbody>
+            </table>
+            <div id="emptyState" class="empty-state">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="48" height="48">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                </svg>
+                <h3>No spoof access logs yet</h3>
+                <p>When websites try to access fingerprinting APIs, they'll appear here.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="logs.js" type="module"></script>
+</body>
+
+</html>

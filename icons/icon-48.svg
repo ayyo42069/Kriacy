@@ -1,0 +1,19 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cozy48" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d4a574"/>
+      <stop offset="50%" stop-color="#c9956a"/>
+      <stop offset="100%" stop-color="#a67c52"/>
+    </linearGradient>
+    <linearGradient id="inner48" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f5e6d3"/>
+      <stop offset="100%" stop-color="#e8d4bc"/>
+    </linearGradient>
+    <filter id="glow48" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#8b6543" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <circle cx="24" cy="24" r="21" fill="url(#cozy48)" filter="url(#glow48)"/>
+  <circle cx="24" cy="24" r="17" fill="none" stroke="url(#inner48)" stroke-width="1.5" opacity="0.5"/>
+  <path d="M18 12V36H22V25L31 36H37L27 24L36 12H30L22 23V12H18Z" fill="#f5e6d3" opacity="0.95"/>
+</svg>

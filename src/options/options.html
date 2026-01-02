@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kriacy - Settings</title>
+    <link rel="stylesheet" href="options.css">
+</head>
+
+<body>
+    <div class="options-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="cozyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#d4a574" />
+                                <stop offset="50%" stop-color="#c9956a" />
+                                <stop offset="100%" stop-color="#a67c52" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="16" cy="16" r="14" fill="url(#cozyGrad)" />
+                        <circle cx="16" cy="16" r="11" fill="none" stroke="#f5e6d3" stroke-width="1" opacity="0.4" />
+                        <path d="M12 8V24H15V17L21 24H25L18 16L24 8H20L15 15V8H12Z" fill="#f5e6d3" opacity="0.95" />
+                    </svg>
+                    <span class="logo-text">Kriacy</span>
+                </div>
+                <span class="version">v1.0.6</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#general" class="nav-item active" data-section="general">
+                    <span class="nav-icon">⚙️</span>
+                    <span>General</span>
+                </a>
+                <a href="#webrtc" class="nav-item" data-section="webrtc">
+                    <span class="nav-icon">🌐</span>
+                    <span>WebRTC</span>
+                </a>
+                <a href="#canvas" class="nav-item" data-section="canvas">
+                    <span class="nav-icon">🎨</span>
+                    <span>Canvas & Audio</span>
+                </a>
+                <a href="#webgl" class="nav-item" data-section="webgl">
+                    <span class="nav-icon">🖼️</span>
+                    <span>WebGL</span>
+                </a>
+                <a href="#navigator" class="nav-item" data-section="navigator">
+                    <span class="nav-icon">🧭</span>
+                    <span>Navigator</span>
+                </a>
+                <a href="#screen" class="nav-item" data-section="screen">
+                    <span class="nav-icon">🖥️</span>
+                    <span>Screen</span>
+                </a>
+                <a href="#location" class="nav-item" data-section="location">
+                    <span class="nav-icon">📍</span>
+                    <span>Location</span>
+                </a>
+                <a href="#misc" class="nav-item" data-section="misc">
+                    <span class="nav-icon">🔧</span>
+                    <span>Misc</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn btn-randomize-all" id="randomizeAllBtn">
+                    <span>🎲</span> Randomize All
+                </button>
+                <button class="btn btn-outline" id="resetBtn">Reset to Defaults</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- General Section -->
+            <section id="general" class="section active">
+                <div class="section-header">
+                    <h2>General Settings</h2>
+                    <p>Configure main protection settings</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Protection Status</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Enable Protection</label>
+                                <p class="setting-desc">Master switch for all fingerprint protection</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="enabledToggle" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Protection Profile</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="profile-cards">
+                            <div class="profile-card" data-profile="minimal">
+                                <span class="profile-icon">⚡</span>
+                                <h4>Minimal</h4>
+                                <p>Basic protection with minimal website breakage</p>
+                            </div>
+                            <div class="profile-card active" data-profile="balanced">
+                                <span class="profile-icon">⚖️</span>
+                                <h4>Balanced</h4>
+                                <p>Recommended protection for most users</p>
+                            </div>
+                            <div class="profile-card" data-profile="aggressive">
+                                <span class="profile-icon">🔒</span>
+                                <h4>Aggressive</h4>
+                                <p>Maximum protection, may break some sites</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card info-card">
+                    <div class="card-body">
+                        <div class="info-icon">💡</div>
+                        <div class="info-content">
+                            <h4>Session Rotating Fingerprints</h4>
+                            <p>Kriacy automatically generates unique fingerprints for each browser session to prevent
+                                tracking across visits. Each time you restart your browser, you'll have a new digital
+                                identity.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WebRTC Section -->
+            <section id="webrtc" class="section">
+                <div class="section-header">
+                    <h2>WebRTC Protection</h2>
+                    <p>Prevent IP address leaks through WebRTC</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Enable WebRTC Protection</label>
+                                <p class="setting-desc">Blocks or modifies WebRTC to prevent IP leaks</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="webrtcEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Protection Mode</label>
+                                <p class="setting-desc">How to handle WebRTC connections</p>
+                            </div>
+                            <select id="webrtcMode" class="select">
+                                <option value="block">Block All</option>
+                                <option value="disable_non_proxied">Disable Non-Proxied UDP</option>
+                                <option value="spoof">Spoof IP Addresses</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Canvas & Audio Section -->
+            <section id="canvas" class="section">
+                <div class="section-header">
+                    <h2>Canvas & Audio Protection</h2>
+                    <p>Randomize canvas and audio fingerprint data</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Canvas Fingerprint</h3>
+                        <button class="btn btn-sm btn-icon" id="randomizeCanvas" title="Regenerate noise seed">
+                            🎲 Randomize
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Enable Canvas Protection</label>
+                                <p class="setting-desc">Adds deterministic noise to canvas fingerprinting attempts.
+                                    Noise pattern rotates each session.</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="canvasEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Noise Level</label>
+                                <p class="setting-desc">Amount of noise to add (higher = more protection but may affect
+                                    visuals)</p>
+                            </div>
+                            <div class="range-input">
+                                <input type="range" id="canvasNoise" min="1" max="50" value="10">
+                                <span class="range-value" id="canvasNoiseValue">10%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Audio Fingerprint</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Enable Audio Protection</label>
+                                <p class="setting-desc">Adds noise to AudioContext API to prevent audio fingerprinting
+                                </p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="audioEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WebGL Section -->
+            <section id="webgl" class="section">
+                <div class="section-header">
+                    <h2>WebGL Protection</h2>
+                    <p>Spoof graphics card information</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>GPU Information</h3>
+                        <button class="btn btn-sm btn-icon" id="randomizeWebGL" title="Generate random GPU">
+                            🎲 Randomize
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Enable WebGL Protection</label>
+                                <p class="setting-desc">Spoofs GPU vendor and renderer strings</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="webglEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row full-width">
+                            <div class="setting-info">
+                                <label>GPU Vendor</label>
+                                <p class="setting-desc">Spoofed vendor string</p>
+                            </div>
+                            <input type="text" id="webglVendor" class="input" value="Google Inc. (Intel)"
+                                placeholder="GPU Vendor">
+                        </div>
+
+                        <div class="setting-row full-width">
+                            <div class="setting-info">
+                                <label>GPU Renderer</label>
+                                <p class="setting-desc">Spoofed renderer string</p>
+                            </div>
+                            <input type="text" id="webglRenderer" class="input"
+                                value="ANGLE (Intel, Intel(R) UHD Graphics 620, OpenGL 4.6)" placeholder="GPU Renderer">
+                        </div>
+
+                        <div class="gpu-presets">
+                            <label class="setting-label-sm">Quick Presets:</label>
+                            <div class="preset-chips">
+                                <button class="chip" data-vendor="Google Inc. (Intel)"
+                                    data-renderer="ANGLE (Intel, Intel(R) UHD Graphics 620 Direct3D11 vs_5_0 ps_5_0, D3D11)">Intel
+                                    UHD 620</button>
+                                <button class="chip" data-vendor="Google Inc. (NVIDIA)"
+                                    data-renderer="ANGLE (NVIDIA, NVIDIA GeForce GTX 1060 Direct3D11 vs_5_0 ps_5_0, D3D11)">GTX
+                                    1060</button>
+                                <button class="chip" data-vendor="Google Inc. (AMD)"
+                                    data-renderer="ANGLE (AMD, AMD Radeon RX 580 Series Direct3D11 vs_5_0 ps_5_0, D3D11)">RX
+                                    580</button>
+                                <button class="chip" data-vendor="Google Inc. (Apple)"
+                                    data-renderer="ANGLE (Apple, Apple M1, OpenGL 4.1)">Apple M1</button>
+                                <button class="chip" data-vendor="Mesa/X.org"
+                                    data-renderer="Mesa Intel(R) UHD Graphics 620 (KBL GT2)">Mesa Intel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Navigator Section -->
+            <section id="navigator" class="section">
+                <div class="section-header">
+                    <h2>Navigator Properties</h2>
+                    <p>Spoof browser and system information</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>System Information</h3>
+                        <button class="btn btn-sm btn-icon" id="randomizeNavigator"
+                            title="Generate random system profile">
+                            🎲 Randomize
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Enable Navigator Spoofing</label>
+                                <p class="setting-desc">Modifies navigator properties</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="navigatorEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Platform</label>
+                            </div>
+                            <select id="navigatorPlatform" class="select">
+                                <option value="Win32">Windows (Win32)</option>
+                                <option value="MacIntel">macOS (MacIntel)</option>
+                                <option value="Linux x86_64">Linux x86_64</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Hardware Concurrency</label>
+                                <p class="setting-desc">Number of logical CPU cores</p>
+                            </div>
+                            <select id="hardwareConcurrency" class="select">
+                                <option value="2">2 cores</option>
+                                <option value="4" selected>4 cores</option>
+                                <option value="6">6 cores</option>
+                                <option value="8">8 cores</option>
+                                <option value="12">12 cores</option>
+                                <option value="16">16 cores</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Device Memory</label>
+                                <p class="setting-desc">Amount of RAM in GB</p>
+                            </div>
+                            <select id="deviceMemory" class="select">
+                                <option value="2">2 GB</option>
+                                <option value="4">4 GB</option>
+                                <option value="8" selected>8 GB</option>
+                                <option value="16">16 GB</option>
+                                <option value="32">32 GB</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Language</label>
+                            </div>
+                            <select id="navigatorLanguage" class="select">
+                                <option value="en-US">English (US)</option>
+                                <option value="en-GB">English (UK)</option>
+                                <option value="de-DE">German</option>
+                                <option value="fr-FR">French</option>
+                                <option value="es-ES">Spanish</option>
+                                <option value="zh-CN">Chinese (Simplified)</option>
+                                <option value="ja-JP">Japanese</option>
+                                <option value="ko-KR">Korean</option>
+                                <option value="pt-BR">Portuguese (Brazil)</option>
+                                <option value="ru-RU">Russian</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Screen Section -->
+            <section id="screen" class="section">
+                <div class="section-header">
+                    <h2>Screen Properties</h2>
+                    <p>Spoof screen resolution and properties</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Display Information</h3>
+                        <button class="btn btn-sm btn-icon" id="randomizeScreen"
+                            title="Generate random screen settings">
+                            🎲 Randomize
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Enable Screen Spoofing</label>
+                                <p class="setting-desc">Modifies screen properties</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="screenEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Resolution</label>
+                            </div>
+                            <select id="screenResolution" class="select">
+                                <option value="1280x720">1280 x 720 (HD)</option>
+                                <option value="1366x768">1366 x 768</option>
+                                <option value="1440x900">1440 x 900</option>
+                                <option value="1536x864">1536 x 864</option>
+                                <option value="1600x900">1600 x 900</option>
+                                <option value="1920x1080" selected>1920 x 1080 (FHD)</option>
+                                <option value="2560x1440">2560 x 1440 (QHD)</option>
+                                <option value="3840x2160">3840 x 2160 (4K)</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Color Depth</label>
+                            </div>
+                            <select id="colorDepth" class="select">
+                                <option value="24" selected>24-bit</option>
+                                <option value="30">30-bit</option>
+                                <option value="32">32-bit</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Pixel Ratio</label>
+                            </div>
+                            <select id="pixelRatio" class="select">
+                                <option value="1" selected>1x</option>
+                                <option value="1.25">1.25x</option>
+                                <option value="1.5">1.5x</option>
+                                <option value="2">2x (Retina)</option>
+                                <option value="3">3x</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Location Section -->
+            <section id="location" class="section">
+                <div class="section-header">
+                    <h2>Location & Timezone</h2>
+                    <p>Control geolocation and timezone detection</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Geolocation</h3>
+                        <button class="btn btn-sm btn-icon" id="randomizeLocation" title="Generate random location">
+                            🎲 Randomize
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Geolocation Mode</label>
+                                <p class="setting-desc">How to handle location requests</p>
+                            </div>
+                            <select id="geoMode" class="select">
+                                <option value="block" selected>Block All</option>
+                                <option value="spoof">Spoof Location</option>
+                            </select>
+                        </div>
+
+                        <div class="geo-coords-container" id="geoCoordsContainer" style="display: none;">
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <label>Latitude</label>
+                                </div>
+                                <input type="number" id="geoLatitude" class="input input-sm" value="0" step="0.0001"
+                                    min="-90" max="90">
+                            </div>
+
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <label>Longitude</label>
+                                </div>
+                                <input type="number" id="geoLongitude" class="input input-sm" value="0" step="0.0001"
+                                    min="-180" max="180">
+                            </div>
+
+                            <div class="location-presets">
+                                <label class="setting-label-sm">Quick Locations:</label>
+                                <div class="preset-chips">
+                                    <button class="chip" data-lat="40.7128" data-lng="-74.0060"
+                                        data-tz="America/New_York">New York</button>
+                                    <button class="chip" data-lat="51.5074" data-lng="-0.1278"
+                                        data-tz="Europe/London">London</button>
+                                    <button class="chip" data-lat="35.6762" data-lng="139.6503"
+                                        data-tz="Asia/Tokyo">Tokyo</button>
+                                    <button class="chip" data-lat="48.8566" data-lng="2.3522"
+                                        data-tz="Europe/Paris">Paris</button>
+                                    <button class="chip" data-lat="-33.8688" data-lng="151.2093"
+                                        data-tz="Australia/Sydney">Sydney</button>
+                                    <button class="chip" data-lat="55.7558" data-lng="37.6173"
+                                        data-tz="Europe/Moscow">Moscow</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Timezone</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Timezone</label>
+                            </div>
+                            <select id="timezone" class="select">
+                                <option value="UTC">UTC (±0:00)</option>
+                                <option value="America/New_York">New York (UTC-5)</option>
+                                <option value="America/Chicago">Chicago (UTC-6)</option>
+                                <option value="America/Denver">Denver (UTC-7)</option>
+                                <option value="America/Los_Angeles">Los Angeles (UTC-8)</option>
+                                <option value="Europe/London">London (UTC+0)</option>
+                                <option value="Europe/Paris">Paris (UTC+1)</option>
+                                <option value="Europe/Berlin">Berlin (UTC+1)</option>
+                                <option value="Europe/Moscow">Moscow (UTC+3)</option>
+                                <option value="Asia/Dubai">Dubai (UTC+4)</option>
+                                <option value="Asia/Shanghai">Shanghai (UTC+8)</option>
+                                <option value="Asia/Tokyo">Tokyo (UTC+9)</option>
+                                <option value="Australia/Sydney">Sydney (UTC+11)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Misc Section -->
+            <section id="misc" class="section">
+                <div class="section-header">
+                    <h2>Miscellaneous Protections</h2>
+                    <p>Additional privacy and fingerprinting protections</p>
+                </div>
+
+                <!-- Basic API Spoofing -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Basic API Spoofing</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Battery API Spoofing</label>
+                                <p class="setting-desc">Returns fake battery information with randomized values</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="batteryEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Network Information Spoofing</label>
+                                <p class="setting-desc">Reports consistent connection details (4G/WiFi)</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="networkEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Plugin Enumeration Protection</label>
+                                <p class="setting-desc">Returns common plugins list only</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="pluginsEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Font Fingerprinting Protection</label>
+                                <p class="setting-desc">Blocks non-common font enumeration</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="fontsEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>ClientRects Protection</label>
+                                <p class="setting-desc">Adds noise to element dimension measurements</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="clientRectsEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Speech Synthesis Protection</label>
+                                <p class="setting-desc">Limits voice list to reduce fingerprint surface</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="speechEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timing & Performance -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Timing & Performance</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Performance API Protection</label>
+                                <p class="setting-desc">Reduces timing precision and adds noise to prevent timing
+                                    attacks</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="performanceEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Math Fingerprinting Protection</label>
+                                <p class="setting-desc">Adds imperceptible noise to Math functions (sinh, cosh, etc.)
+                                </p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="mathEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>History Length Spoofing</label>
+                                <p class="setting-desc">Returns consistent history.length value (1-5)</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="historyEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hardware APIs -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Hardware API Blocking</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Bluetooth API Blocking</label>
+                                <p class="setting-desc">Blocks bluetooth device enumeration</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="bluetoothEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Gamepad API Protection</label>
+                                <p class="setting-desc">Hides connected game controllers</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="gamepadEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>USB/Serial/HID Blocking</label>
+                                <p class="setting-desc">Blocks hardware enumeration APIs (USB, Serial, HID)</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="hardwareApisEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Device Sensor Protection</label>
+                                <p class="setting-desc">Normalizes orientation and motion sensor data</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="sensorsEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Privacy Signals -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Privacy Signals</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Do Not Track (DNT) Signal</label>
+                                <p class="setting-desc">Always sends DNT: 1 header</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="dntEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Global Privacy Control (GPC)</label>
+                                <p class="setting-desc">Enables GPC signal for privacy opt-out</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="gpcEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Visibility API Spoofing</label>
+                                <p class="setting-desc">Always reports page as visible</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="visibilityEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>window.name Protection</label>
+                                <p class="setting-desc">Clears tracking IDs from window.name</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="windowNameEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input & Display -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Input & Display</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Keyboard Layout Protection</label>
+                                <p class="setting-desc">Returns standard US QWERTY keyboard layout</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="keyboardEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Pointer Event Normalization</label>
+                                <p class="setting-desc">Normalizes pressure, tilt, and twist values</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="pointerEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Media Query Spoofing</label>
+                                <p class="setting-desc">Spoofs prefers-color-scheme, reduced-motion, contrast</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="mediaQueryEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security & Access -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Security & Access</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Clipboard API Protection</label>
+                                <p class="setting-desc">Blocks unauthorized clipboard read access</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="clipboardEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Credentials API Protection</label>
+                                <p class="setting-desc">Limits WebAuthn/PublicKey fingerprinting</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="credentialsEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Error Stack Sanitization</label>
+                                <p class="setting-desc">Sanitizes error stack traces to prevent path leaks</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="errorStackEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Storage Estimation Spoofing</label>
+                                <p class="setting-desc">Randomizes storage quota and usage values</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="storageEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <label>Block Service Workers</label>
+                                <p class="setting-desc">Blocks Service Worker registration to prevent fingerprinting (may break some sites)</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="blockServiceWorkersEnabled">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info card -->
+                <div class="card info-card">
+                    <div class="card-body">
+                        <div class="info-icon">💡</div>
+                        <div class="info-content">
+                            <h4>About Miscellaneous Protections</h4>
+                            <p>These protections cover various browser APIs commonly used for fingerprinting.
+                                All protections are tied to your session seed and will generate consistent
+                                values per session while changing on browser restart.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="options.js" type="module"></script>
+</body>
+
+</html>
