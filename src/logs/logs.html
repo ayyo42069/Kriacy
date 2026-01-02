@@ -21,20 +21,83 @@
                         </svg>
                     </div>
                     <h1>Kriacy Logs</h1>
+                    <div class="live-indicator" id="liveIndicator" title="Auto-refresh active">
+                        <span class="pulse"></span>
+                        <span class="live-text">LIVE</span>
+                    </div>
                 </div>
                 <p class="subtitle">Spoof Access Activity Monitor</p>
             </div>
         </header>
 
+        <!-- Stats -->
+        <div class="stats-dashboard">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-value" id="totalBlocked">0</span>
+                    <span class="stat-label">Total Blocked</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-value" id="uniqueSites">0</span>
+                    <span class="stat-label">Unique Sites</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z" />
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-value" id="topApi">-</span>
+                    <span class="stat-label">Most Accessed API</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-value" id="lastUpdate">-</span>
+                    <span class="stat-label">Last Activity</span>
+                </div>
+            </div>
+        </div>
+
         <!-- Controls -->
-        <div class="controls">
-            <div class="filters">
-                <div class="filter-group">
-                    <label for="apiFilter">Filter by API:</label>
+        <div class="controls-bar">
+            <div class="controls-left">
+                <div class="search-wrapper">
+                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                    </svg>
+                    <input type="text" id="searchInput" placeholder="Search...">
+                    <kbd id="searchClear" class="search-clear hidden">×</kbd>
+                </div>
+
+                <div class="filter-dropdown">
                     <select id="apiFilter">
                         <option value="all">All APIs</option>
                         <option value="canvas">Canvas</option>
                         <option value="webgl">WebGL</option>
+                        <option value="webgl-canvas">WebGL Canvas</option>
                         <option value="audio">Audio</option>
                         <option value="navigator">Navigator</option>
                         <option value="screen">Screen</option>
@@ -45,85 +108,121 @@
                         <option value="network">Network</option>
                         <option value="fonts">Fonts</option>
                         <option value="media">Media</option>
+                        <option value="svg">SVG</option>
+                        <option value="text-render">Text Render</option>
                         <option value="misc">Misc</option>
                     </select>
                 </div>
-                <div class="filter-group">
-                    <label for="searchInput">Search URL:</label>
-                    <input type="text" id="searchInput" placeholder="Filter by URL...">
-                </div>
             </div>
-            <div class="actions">
-                <button id="refreshBtn" class="btn btn-secondary">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="16"
-                        height="16">
-                        <path fill-rule="evenodd"
-                            d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
-                            clip-rule="evenodd" />
+
+            <div class="controls-right">
+                <button id="pauseBtn" class="btn btn-icon" title="Pause auto-refresh">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18"
+                        height="18">
+                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                     </svg>
-                    Refresh
                 </button>
-                <button id="exportBtn" class="btn btn-secondary">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="16"
+                <button id="refreshBtn" class="btn btn-secondary" title="Refresh now">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16"
                         height="16">
-                        <path fill-rule="evenodd"
-                            d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                            clip-rule="evenodd" />
+                        <path
+                            d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
                     </svg>
-                    Export
+                    <span>Refresh</span>
                 </button>
-                <button id="clearBtn" class="btn btn-danger">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="16"
+                <button id="exportBtn" class="btn btn-secondary" title="Export logs">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16"
                         height="16">
-                        <path fill-rule="evenodd"
-                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                            clip-rule="evenodd" />
+                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
                     </svg>
-                    Clear All
+                    <span>Export</span>
+                </button>
+                <button id="clearBtn" class="btn btn-danger" title="Clear all logs">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16"
+                        height="16">
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                    </svg>
+                    <span>Clear</span>
                 </button>
             </div>
         </div>
 
-        <!-- Stats -->
-        <div class="stats">
-            <div class="stat-card">
-                <span class="stat-value" id="totalLogs">0</span>
-                <span class="stat-label">Total Logs</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-value" id="uniqueSites">0</span>
-                <span class="stat-label">Unique Sites</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-value" id="topApi">-</span>
-                <span class="stat-label">Most Accessed API</span>
+        <!-- API Breakdown Chart -->
+        <div class="chart-section" id="chartSection">
+            <h3 class="section-title">API Access Breakdown</h3>
+            <div class="api-breakdown" id="apiBreakdown">
+                <!-- API bars will be inserted here -->
             </div>
         </div>
 
         <!-- Logs Table -->
-        <div class="logs-container">
-            <table class="logs-table">
-                <thead>
-                    <tr>
-                        <th>Time</th>
-                        <th>Count</th>
-                        <th>Site</th>
-                        <th>API</th>
-                        <th>Method</th>
-                        <th>Details</th>
-                    </tr>
-                </thead>
-                <tbody id="logsBody">
-                    <!-- Logs will be inserted here -->
-                </tbody>
-            </table>
-            <div id="emptyState" class="empty-state">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="48" height="48">
-                    <path
-                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                </svg>
-                <h3>No spoof access logs yet</h3>
-                <p>When websites try to access fingerprinting APIs, they'll appear here.</p>
+        <div class="logs-section">
+            <div class="logs-header">
+                <h3 class="section-title" style="margin-bottom: 0;">Activity Log</h3>
+                <div class="logs-info">
+                    <span id="displayedCount">0</span> entries
+                </div>
+            </div>
+
+            <div class="logs-container">
+                <table class="logs-table" id="logsTable">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Count</th>
+                            <th>Site</th>
+                            <th>API</th>
+                            <th>Method</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsBody">
+                        <!-- Logs will be inserted here -->
+                    </tbody>
+                </table>
+
+                <div id="emptyState" class="empty-state">
+                    <div class="empty-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
+                        </svg>
+                    </div>
+                    <h3>No spoof access logs yet</h3>
+                    <p>When websites try to access fingerprinting APIs, they'll appear here.</p>
+                    <div class="empty-tips">
+                        <p><strong>Tips:</strong></p>
+                        <ul>
+                            <li>Visit a fingerprinting test site like <a href="https://browserleaks.com"
+                                    target="_blank">BrowserLeaks</a></li>
+                            <li>Make sure Kriacy protection is enabled</li>
+                            <li>Logs may take a few seconds to appear</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Load More -->
+            <div class="load-more-wrapper" id="loadMoreWrapper" style="display: none;">
+                <button id="loadMoreBtn" class="btn btn-secondary btn-wide">Load More</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <span id="toastMessage"></span>
+    </div>
+
+    <!-- Log Detail Modal -->
+    <div id="logDetailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Log Details</h3>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Detail content will be inserted here -->
             </div>
         </div>
     </div>
