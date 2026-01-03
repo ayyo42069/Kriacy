@@ -431,6 +431,38 @@ export function initStealthProtections(): void {
 }
 
 /**
+ * Protect Keyboard API methods - make them appear as native functions
+ */
+export function initKeyboardStealthProtection(): void {
+    // navigator.keyboard methods
+    if ('keyboard' in navigator) {
+        const keyboard = (navigator as any).keyboard;
+        if (keyboard?.getLayoutMap) makeNative(keyboard.getLayoutMap, 'getLayoutMap');
+        if (keyboard?.lock) makeNative(keyboard.lock, 'lock');
+        if (keyboard?.unlock) makeNative(keyboard.unlock, 'unlock');
+    }
+
+    // KeyboardEvent prototype methods and getters
+    if (typeof KeyboardEvent !== 'undefined') {
+        const proto = KeyboardEvent.prototype;
+
+        // Make getModifierState look native
+        if (proto.getModifierState) makeNative(proto.getModifierState, 'getModifierState');
+
+        // Make key and code getters look native
+        const keyDescriptor = Object.getOwnPropertyDescriptor(proto, 'key');
+        if (keyDescriptor && keyDescriptor.get) {
+            makeNativeGetter(keyDescriptor.get, 'key');
+        }
+
+        const codeDescriptor = Object.getOwnPropertyDescriptor(proto, 'code');
+        if (codeDescriptor && codeDescriptor.get) {
+            makeNativeGetter(codeDescriptor.get, 'code');
+        }
+    }
+}
+
+/**
  * Call this after all protections have been initialized
  * to make all the patched methods look native
  */
@@ -442,6 +474,7 @@ export function finalizeWebGLStealth(): void {
     initScreenStealthProtection();
     initDateStealthProtection();
     initIntlStealthProtection();
+    initKeyboardStealthProtection();
 }
 
 /**

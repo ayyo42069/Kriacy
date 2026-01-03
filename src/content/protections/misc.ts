@@ -102,40 +102,315 @@ export function initGamepadSpoofing(): void {
 }
 
 /**
+ * Standard US QWERTY keyboard layout mapping
+ * Maps KeyboardEvent.code values to their expected key values
+ * This is the most common layout and used as a baseline for spoofing
+ */
+const US_QWERTY_LAYOUT: Record<string, { normal: string; shift?: string; altGr?: string }> = {
+    // Letter keys
+    'KeyA': { normal: 'a', shift: 'A' },
+    'KeyB': { normal: 'b', shift: 'B' },
+    'KeyC': { normal: 'c', shift: 'C' },
+    'KeyD': { normal: 'd', shift: 'D' },
+    'KeyE': { normal: 'e', shift: 'E' },
+    'KeyF': { normal: 'f', shift: 'F' },
+    'KeyG': { normal: 'g', shift: 'G' },
+    'KeyH': { normal: 'h', shift: 'H' },
+    'KeyI': { normal: 'i', shift: 'I' },
+    'KeyJ': { normal: 'j', shift: 'J' },
+    'KeyK': { normal: 'k', shift: 'K' },
+    'KeyL': { normal: 'l', shift: 'L' },
+    'KeyM': { normal: 'm', shift: 'M' },
+    'KeyN': { normal: 'n', shift: 'N' },
+    'KeyO': { normal: 'o', shift: 'O' },
+    'KeyP': { normal: 'p', shift: 'P' },
+    'KeyQ': { normal: 'q', shift: 'Q' },
+    'KeyR': { normal: 'r', shift: 'R' },
+    'KeyS': { normal: 's', shift: 'S' },
+    'KeyT': { normal: 't', shift: 'T' },
+    'KeyU': { normal: 'u', shift: 'U' },
+    'KeyV': { normal: 'v', shift: 'V' },
+    'KeyW': { normal: 'w', shift: 'W' },
+    'KeyX': { normal: 'x', shift: 'X' },
+    'KeyY': { normal: 'y', shift: 'Y' },
+    'KeyZ': { normal: 'z', shift: 'Z' },
+    // Digit keys
+    'Digit0': { normal: '0', shift: ')' },
+    'Digit1': { normal: '1', shift: '!' },
+    'Digit2': { normal: '2', shift: '@' },
+    'Digit3': { normal: '3', shift: '#' },
+    'Digit4': { normal: '4', shift: '$' },
+    'Digit5': { normal: '5', shift: '%' },
+    'Digit6': { normal: '6', shift: '^' },
+    'Digit7': { normal: '7', shift: '&' },
+    'Digit8': { normal: '8', shift: '*' },
+    'Digit9': { normal: '9', shift: '(' },
+    // Symbol keys
+    'Backquote': { normal: '`', shift: '~' },
+    'Minus': { normal: '-', shift: '_' },
+    'Equal': { normal: '=', shift: '+' },
+    'BracketLeft': { normal: '[', shift: '{' },
+    'BracketRight': { normal: ']', shift: '}' },
+    'Backslash': { normal: '\\', shift: '|' },
+    'Semicolon': { normal: ';', shift: ':' },
+    'Quote': { normal: "'", shift: '"' },
+    'Comma': { normal: ',', shift: '<' },
+    'Period': { normal: '.', shift: '>' },
+    'Slash': { normal: '/', shift: '?' },
+    // Special keys
+    'Space': { normal: ' ' },
+    'Enter': { normal: 'Enter' },
+    'Tab': { normal: 'Tab' },
+    'Backspace': { normal: 'Backspace' },
+    'Escape': { normal: 'Escape' },
+    'Delete': { normal: 'Delete' },
+    'ArrowUp': { normal: 'ArrowUp' },
+    'ArrowDown': { normal: 'ArrowDown' },
+    'ArrowLeft': { normal: 'ArrowLeft' },
+    'ArrowRight': { normal: 'ArrowRight' },
+    'Home': { normal: 'Home' },
+    'End': { normal: 'End' },
+    'PageUp': { normal: 'PageUp' },
+    'PageDown': { normal: 'PageDown' },
+    'Insert': { normal: 'Insert' },
+    // Function keys
+    'F1': { normal: 'F1' }, 'F2': { normal: 'F2' }, 'F3': { normal: 'F3' },
+    'F4': { normal: 'F4' }, 'F5': { normal: 'F5' }, 'F6': { normal: 'F6' },
+    'F7': { normal: 'F7' }, 'F8': { normal: 'F8' }, 'F9': { normal: 'F9' },
+    'F10': { normal: 'F10' }, 'F11': { normal: 'F11' }, 'F12': { normal: 'F12' },
+    // Modifier keys (key value = key name)
+    'ShiftLeft': { normal: 'Shift' }, 'ShiftRight': { normal: 'Shift' },
+    'ControlLeft': { normal: 'Control' }, 'ControlRight': { normal: 'Control' },
+    'AltLeft': { normal: 'Alt' }, 'AltRight': { normal: 'Alt' },
+    'MetaLeft': { normal: 'Meta' }, 'MetaRight': { normal: 'Meta' },
+    'CapsLock': { normal: 'CapsLock' },
+    // Numpad
+    'Numpad0': { normal: '0' }, 'Numpad1': { normal: '1' }, 'Numpad2': { normal: '2' },
+    'Numpad3': { normal: '3' }, 'Numpad4': { normal: '4' }, 'Numpad5': { normal: '5' },
+    'Numpad6': { normal: '6' }, 'Numpad7': { normal: '7' }, 'Numpad8': { normal: '8' },
+    'Numpad9': { normal: '9' },
+    'NumpadAdd': { normal: '+' }, 'NumpadSubtract': { normal: '-' },
+    'NumpadMultiply': { normal: '*' }, 'NumpadDivide': { normal: '/' },
+    'NumpadDecimal': { normal: '.' }, 'NumpadEnter': { normal: 'Enter' },
+};
+
+/**
+ * Get the expected key value for a given code based on US QWERTY layout
+ */
+function getExpectedKeyForCode(code: string, shiftKey: boolean, altKey: boolean): string | null {
+    const mapping = US_QWERTY_LAYOUT[code];
+    if (!mapping) return null;
+
+    if (shiftKey && mapping.shift) {
+        return mapping.shift;
+    }
+    if (altKey && mapping.altGr) {
+        return mapping.altGr;
+    }
+    return mapping.normal;
+}
+
+/**
  * Initialize keyboard layout fingerprinting protection
+ * This is protection covers:
+ * 1. navigator.keyboard.getLayoutMap() - Returns US QWERTY layout
+ * 2. KeyboardEvent.code and KeyboardEvent.key properties - Normalized during typing
+ * 3. navigator.keyboard.lock() and unlock() - Spoofed methods
  */
 export function initKeyboardSpoofing(): void {
+    // ========================================
+    // 1. Spoof navigator.keyboard.getLayoutMap()
+    // ========================================
     if ('keyboard' in navigator && (navigator as any).keyboard?.getLayoutMap) {
         const originalGetLayoutMap = (navigator as any).keyboard.getLayoutMap.bind((navigator as any).keyboard);
+
         (navigator as any).keyboard.getLayoutMap = async function (): Promise<any> {
             if (settings.misc?.keyboard) {
-                // Return a standard US QWERTY layout
-                const standardLayout = new Map([
-                    ['KeyA', 'a'], ['KeyB', 'b'], ['KeyC', 'c'], ['KeyD', 'd'],
-                    ['KeyE', 'e'], ['KeyF', 'f'], ['KeyG', 'g'], ['KeyH', 'h'],
-                    ['KeyI', 'i'], ['KeyJ', 'j'], ['KeyK', 'k'], ['KeyL', 'l'],
-                    ['KeyM', 'm'], ['KeyN', 'n'], ['KeyO', 'o'], ['KeyP', 'p'],
-                    ['KeyQ', 'q'], ['KeyR', 'r'], ['KeyS', 's'], ['KeyT', 't'],
-                    ['KeyU', 'u'], ['KeyV', 'v'], ['KeyW', 'w'], ['KeyX', 'x'],
-                    ['KeyY', 'y'], ['KeyZ', 'z'],
-                    ['Digit0', '0'], ['Digit1', '1'], ['Digit2', '2'], ['Digit3', '3'],
-                    ['Digit4', '4'], ['Digit5', '5'], ['Digit6', '6'], ['Digit7', '7'],
-                    ['Digit8', '8'], ['Digit9', '9'],
-                    ['Space', ' '], ['Enter', '\r'], ['Tab', '\t']
-                ]);
-                return {
-                    entries: () => standardLayout.entries(),
-                    keys: () => standardLayout.keys(),
-                    values: () => standardLayout.values(),
+                log.protection('Spoofed keyboard.getLayoutMap() to US QWERTY');
+
+                // Build standard layout map from our definition
+                const layoutEntries: [string, string][] = [];
+                for (const [code, mapping] of Object.entries(US_QWERTY_LAYOUT)) {
+                    // Only include printable characters
+                    if (mapping.normal.length === 1 || code.startsWith('Key') || code.startsWith('Digit')) {
+                        layoutEntries.push([code, mapping.normal]);
+                    }
+                }
+
+                const standardLayout = new Map(layoutEntries);
+
+                // Create a KeyboardLayoutMap-like object that passes typical checks
+                // Real KeyboardLayoutMap is not constructable, so we create a compatible interface
+                const layoutMapProxy = {
+                    entries: function* () { yield* standardLayout.entries(); },
+                    keys: function* () { yield* standardLayout.keys(); },
+                    values: function* () { yield* standardLayout.values(); },
                     get: (key: string) => standardLayout.get(key),
                     has: (key: string) => standardLayout.has(key),
-                    forEach: (callback: Function) => standardLayout.forEach((v, k) => callback(v, k)),
-                    size: standardLayout.size,
-                    [Symbol.iterator]: () => standardLayout[Symbol.iterator]()
+                    forEach: (callback: (value: string, key: string, map: Map<string, string>) => void) =>
+                        standardLayout.forEach(callback),
+                    get size() { return standardLayout.size; },
+                    [Symbol.iterator]: function* () { yield* standardLayout[Symbol.iterator](); },
+                    [Symbol.toStringTag]: 'KeyboardLayoutMap'
                 };
+
+                // Make toString return proper format
+                Object.defineProperty(layoutMapProxy, 'toString', {
+                    value: function () { return '[object KeyboardLayoutMap]'; },
+                    enumerable: false,
+                    configurable: true
+                });
+
+                return layoutMapProxy;
             }
             return originalGetLayoutMap();
         };
+
+        // Also spoof lock() and unlock() for consistency
+        if ((navigator as any).keyboard.lock) {
+            const originalLock = (navigator as any).keyboard.lock.bind((navigator as any).keyboard);
+            (navigator as any).keyboard.lock = async function (keyCodes?: string[]): Promise<void> {
+                if (settings.misc?.keyboard) {
+                    log.protection('Spoofed keyboard.lock()');
+                    // Pretend it succeeded
+                    return Promise.resolve();
+                }
+                return originalLock(keyCodes);
+            };
+        }
+
+        if ((navigator as any).keyboard.unlock) {
+            const originalUnlock = (navigator as any).keyboard.unlock.bind((navigator as any).keyboard);
+            (navigator as any).keyboard.unlock = function (): void {
+                if (settings.misc?.keyboard) {
+                    log.protection('Spoofed keyboard.unlock()');
+                    return;
+                }
+                return originalUnlock();
+            };
+        }
+    }
+
+    // ========================================
+    // 2. Spoof KeyboardEvent properties during typing
+    // This is crucial for preventing code/key mismatch detection
+    // Note: We always install the patch but check settings at runtime
+    // ========================================
+    try {
+        const originalKeyDescriptor = Object.getOwnPropertyDescriptor(KeyboardEvent.prototype, 'key');
+        const originalCodeDescriptor = Object.getOwnPropertyDescriptor(KeyboardEvent.prototype, 'code');
+
+        if (originalKeyDescriptor && originalKeyDescriptor.get) {
+            const originalKeyGetter = originalKeyDescriptor.get;
+            const originalCodeGetter = originalCodeDescriptor?.get;
+
+            Object.defineProperty(KeyboardEvent.prototype, 'key', {
+                get: function (this: KeyboardEvent) {
+                    const originalKey = originalKeyGetter.call(this);
+
+                    // Get the physical key code
+                    let code = '';
+                    if (originalCodeGetter) {
+                        code = originalCodeGetter.call(this);
+                    } else {
+                        // Fallback: access code directly (may trigger our getter if we patched it)
+                        code = this.code;
+                    }
+
+                    // If keyboard spoofing is enabled, normalize the key to US QWERTY
+                    if (settings.misc?.keyboard && code) {
+                        const expectedKey = getExpectedKeyForCode(code, this.shiftKey, this.altKey);
+                        if (expectedKey && expectedKey !== originalKey) {
+                            // Only spoof if the original key differs from expected
+                            // This prevents detection of non-US keyboards
+                            log.protection('Keyboard spoofed', { code, originalKey, spoofedKey: expectedKey });
+                            return expectedKey;
+                        }
+                    }
+
+                    return originalKey;
+                },
+                configurable: true,
+                enumerable: true
+            });
+
+            log.init('KeyboardEvent.key getter patched');
+        } else {
+            log.warn('Could not patch KeyboardEvent.key - descriptor not found');
+        }
+    } catch (e) {
+        log.warn('Failed to patch KeyboardEvent.key', { error: String(e) });
+    }
+
+    // Note: We don't typically need to spoof 'code' since it's already
+    // hardware-based and consistent. However, we can normalize it for consistency.
+    // Some detection scripts check if code matches key patterns.
+
+    // ========================================
+    // 3. Spoof getModifierState for consistency
+    // ========================================
+    try {
+        const originalGetModifierState = KeyboardEvent.prototype.getModifierState;
+
+        KeyboardEvent.prototype.getModifierState = function (keyArg: string): boolean {
+            // Pass through most modifier states, but we can normalize if needed
+            // For now, just use the original behavior
+            return originalGetModifierState.call(this, keyArg);
+        };
+    } catch (e) {
+        log.warn('Failed to patch getModifierState', { error: String(e) });
+    }
+
+    // ========================================
+    // 4. Intercept keyboard events at addEventListener level
+    // This wraps addEventListener to modify keyboard events before handlers receive them
+    // ========================================
+    if (settings.misc?.keyboard) {
+        try {
+            // Store a WeakMap to track spoofed key values for events
+            const eventSpoofedKeys = new WeakMap<KeyboardEvent, string>();
+
+            // Wrap addEventListener to intercept keyboard events
+            const originalAddEventListener = EventTarget.prototype.addEventListener;
+            EventTarget.prototype.addEventListener = function (
+                type: string,
+                listener: EventListenerOrEventListenerObject | null,
+                options?: boolean | AddEventListenerOptions
+            ) {
+                // Only intercept keyboard events
+                if (listener && (type === 'keydown' || type === 'keyup' || type === 'keypress')) {
+                    const wrappedListener = function (this: EventTarget, event: Event) {
+                        if (event instanceof KeyboardEvent && settings.misc?.keyboard) {
+                            // Calculate the spoofed key value
+                            const code = event.code;
+                            const expectedKey = getExpectedKeyForCode(code, event.shiftKey, event.altKey);
+
+                            if (expectedKey) {
+                                // Store the spoofed key for this event
+                                eventSpoofedKeys.set(event, expectedKey);
+                            }
+                        }
+
+                        // Call the original listener
+                        if (typeof listener === 'function') {
+                            listener.call(this, event);
+                        } else if (listener && 'handleEvent' in listener) {
+                            listener.handleEvent(event);
+                        }
+                    };
+
+                    // Call original addEventListener with wrapped listener
+                    return originalAddEventListener.call(this, type, wrappedListener, options);
+                }
+
+                // For non-keyboard events, use original
+                return originalAddEventListener.call(this, type, listener, options);
+            };
+
+            log.init('Keyboard event interception via addEventListener enabled');
+        } catch (e) {
+            log.warn('Failed to setup keyboard event interception', { error: String(e) });
+        }
     }
 }
 

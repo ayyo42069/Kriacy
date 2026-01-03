@@ -240,6 +240,33 @@ function getSpoofedTimezoneName(): string {
 }
 
 /**
+ * Valid Intl.DateTimeFormat options - used to filter invalid options
+ * that could be passed to detect spoofing
+ */
+const VALID_DATE_TIME_FORMAT_OPTIONS = new Set([
+    'localeMatcher', 'weekday', 'era', 'year', 'month', 'day',
+    'hour', 'minute', 'second', 'timeZoneName', 'formatMatcher',
+    'hour12', 'timeZone', 'dateStyle', 'timeStyle', 'calendar',
+    'dayPeriod', 'numberingSystem', 'hourCycle', 'fractionalSecondDigits'
+]);
+
+/**
+ * Filter options to only include valid Intl.DateTimeFormat options
+ * This prevents "Invalid option" errors from fingerprinting tests
+ */
+function filterValidDateTimeFormatOptions(options: Intl.DateTimeFormatOptions | undefined): Intl.DateTimeFormatOptions {
+    if (!options || typeof options !== 'object') return {};
+
+    const filtered: Record<string, unknown> = {};
+    for (const key of Object.keys(options)) {
+        if (VALID_DATE_TIME_FORMAT_OPTIONS.has(key)) {
+            filtered[key] = (options as Record<string, unknown>)[key];
+        }
+    }
+    return filtered as Intl.DateTimeFormatOptions;
+}
+
+/**
  * Detect if a date string will be parsed as local time (not UTC)
  * ISO format without time (YYYY-MM-DD) is parsed as UTC
  * Other formats like MM/DD/YYYY are parsed as local time
@@ -481,7 +508,7 @@ export function initTimezoneSpoofing(): void {
             if (isEnabled()) {
                 isHandlingTimezone = true;
                 try {
-                    const opts: Intl.DateTimeFormatOptions = { ...(options || {}), timeZone: getTargetTimezone() };
+                    const opts: Intl.DateTimeFormatOptions = { ...filterValidDateTimeFormatOptions(options), timeZone: getTargetTimezone() };
                     return new OriginalIntlDateTimeFormat(locales, opts).format(this);
                 } finally {
                     isHandlingTimezone = false;
@@ -498,13 +525,18 @@ export function initTimezoneSpoofing(): void {
             if (isEnabled()) {
                 isHandlingTimezone = true;
                 try {
-                    const opts: Intl.DateTimeFormatOptions = {
-                        ...(options || {}),
-                        timeZone: getTargetTimezone(),
-                        year: 'numeric',
-                        month: 'numeric',
-                        day: 'numeric'
-                    };
+                    const filteredOptions = filterValidDateTimeFormatOptions(options);
+                    // dateStyle conflicts with individual date components (year, month, day)
+                    // Only add defaults if dateStyle is not present
+                    const opts: Intl.DateTimeFormatOptions = filteredOptions.dateStyle
+                        ? { ...filteredOptions, timeZone: getTargetTimezone() }
+                        : {
+                            ...filteredOptions,
+                            timeZone: getTargetTimezone(),
+                            year: filteredOptions.year || 'numeric',
+                            month: filteredOptions.month || 'numeric',
+                            day: filteredOptions.day || 'numeric'
+                        };
                     return new OriginalIntlDateTimeFormat(locales, opts).format(this);
                 } finally {
                     isHandlingTimezone = false;
@@ -521,13 +553,18 @@ export function initTimezoneSpoofing(): void {
             if (isEnabled()) {
                 isHandlingTimezone = true;
                 try {
-                    const opts: Intl.DateTimeFormatOptions = {
-                        ...(options || {}),
-                        timeZone: getTargetTimezone(),
-                        hour: 'numeric',
-                        minute: 'numeric',
-                        second: 'numeric'
-                    };
+                    const filteredOptions = filterValidDateTimeFormatOptions(options);
+                    // timeStyle conflicts with individual time components (hour, minute, second)
+                    // Only add defaults if timeStyle is not present
+                    const opts: Intl.DateTimeFormatOptions = filteredOptions.timeStyle
+                        ? { ...filteredOptions, timeZone: getTargetTimezone() }
+                        : {
+                            ...filteredOptions,
+                            timeZone: getTargetTimezone(),
+                            hour: filteredOptions.hour || 'numeric',
+                            minute: filteredOptions.minute || 'numeric',
+                            second: filteredOptions.second || 'numeric'
+                        };
                     return new OriginalIntlDateTimeFormat(locales, opts).format(this);
                 } finally {
                     isHandlingTimezone = false;
@@ -841,9 +878,9 @@ export function initTimezoneSpoofing(): void {
                 return new OriginalIntlDateTimeFormat(locales, options);
             }
 
-            // Inject the spoofed timezone
+            // Inject the spoofed timezone with filtered options to prevent "Invalid option" errors
             const opts: Intl.DateTimeFormatOptions = {
-                ...(options || {}),
+                ...filterValidDateTimeFormatOptions(options),
                 timeZone: getTargetTimezone()
             };
 
