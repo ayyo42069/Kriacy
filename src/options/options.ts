@@ -152,15 +152,31 @@ const timezoneOffsets: Record<string, number> = {
     'America/New_York': -300,
     'America/Chicago': -360,
     'America/Denver': -420,
+    'America/Phoenix': -420,
     'America/Los_Angeles': -480,
+    'America/Toronto': -300,
+    'America/Vancouver': -480,
+    'America/Sao_Paulo': -180,
+    'America/Fortaleza': -180,
     'Europe/London': 0,
     'Europe/Paris': 60,
     'Europe/Berlin': 60,
+    'Europe/Vienna': 60,
+    'Europe/Zurich': 60,
+    'Europe/Madrid': 60,
+    'Europe/Rome': 60,
+    'Europe/Amsterdam': 60,
+    'Europe/Warsaw': 60,
     'Europe/Moscow': 180,
+    'Europe/Kaliningrad': 120,
     'Asia/Dubai': 240,
     'Asia/Shanghai': 480,
+    'Asia/Hong_Kong': 480,
     'Asia/Tokyo': 540,
-    'Australia/Sydney': 660
+    'Asia/Seoul': 540,
+    'Australia/Sydney': 660,
+    'Australia/Melbourne': 660,
+    'Australia/Perth': 480,
 };
 
 let currentSettings: SpoofSettings | null = null;
@@ -781,47 +797,74 @@ async function applyRandomCanvas() {
 async function applyRandomAll() {
     if (!currentSettings) return;
 
+    // Import the coherent profile generator dynamically
+    const { generateCoherentProfile, coherentProfileToSettings } = await import('../utils/profile-coherence');
+
     // Generate a new fingerprint seed - this is the key to changing fingerprints!
     const newSeed = (Date.now() ^ (Math.random() * 0xFFFFFFFF)) >>> 0;
     currentSettings.fingerprintSeed = newSeed;
 
-    // Apply all random settings
-    const gpu = randomGPU();
-    const nav = randomNavigator();
-    const scr = randomScreen();
-    const loc = randomLocation();
-    const noiseLevel = Math.floor(Math.random() * 20) + 5;
+    // Generate a fully coherent profile - all values are guaranteed to be logically consistent
+    // (e.g., Apple GPU only with Mac platform, proper hardware tiers, matching screen configs, etc.)
+    const coherentProfile = generateCoherentProfile();
 
-    currentSettings.webgl = { ...currentSettings.webgl, vendor: gpu.vendor, renderer: gpu.renderer };
-    currentSettings.navigator = {
-        ...currentSettings.navigator,
-        platform: nav.platform,
-        hardwareConcurrency: nav.hardwareConcurrency,
-        deviceMemory: nav.deviceMemory,
-        language: nav.language,
-        languages: [nav.language, nav.language.split('-')[0]]
+    // Convert the coherent profile to settings format
+    const profileSettings = coherentProfileToSettings(coherentProfile, currentSettings);
+
+    // Apply coherent settings
+    currentSettings.webgl = { ...currentSettings.webgl, ...profileSettings.webgl };
+    currentSettings.navigator = { ...currentSettings.navigator, ...profileSettings.navigator };
+    currentSettings.screen = { ...currentSettings.screen, ...profileSettings.screen };
+    currentSettings.timezone = { ...currentSettings.timezone, ...profileSettings.timezone };
+
+    // Randomize canvas noise level
+    const noiseLevel = Math.floor(Math.random() * 20) + 5;
+    currentSettings.canvas = { ...currentSettings.canvas, noiseLevel };
+
+    // Set geolocation to a coherent location based on timezone
+    const timezoneLocations: Record<string, { lat: number; lng: number }> = {
+        'America/New_York': { lat: 40.7128, lng: -74.006 },
+        'America/Chicago': { lat: 41.8781, lng: -87.6298 },
+        'America/Denver': { lat: 39.7392, lng: -104.9903 },
+        'America/Los_Angeles': { lat: 34.0522, lng: -118.2437 },
+        'America/Phoenix': { lat: 33.4484, lng: -112.074 },
+        'Europe/London': { lat: 51.5074, lng: -0.1278 },
+        'Europe/Berlin': { lat: 52.52, lng: 13.405 },
+        'Europe/Vienna': { lat: 48.2082, lng: 16.3738 },
+        'Europe/Zurich': { lat: 47.3769, lng: 8.5417 },
+        'Europe/Paris': { lat: 48.8566, lng: 2.3522 },
+        'Europe/Madrid': { lat: 40.4168, lng: -3.7038 },
+        'Europe/Rome': { lat: 41.9028, lng: 12.4964 },
+        'Europe/Amsterdam': { lat: 52.3676, lng: 4.9041 },
+        'Europe/Warsaw': { lat: 52.2297, lng: 21.0122 },
+        'Europe/Moscow': { lat: 55.7558, lng: 37.6173 },
+        'Europe/Kaliningrad': { lat: 54.7104, lng: 20.4522 },
+        'Asia/Tokyo': { lat: 35.6762, lng: 139.6503 },
+        'Asia/Seoul': { lat: 37.5665, lng: 126.978 },
+        'Asia/Shanghai': { lat: 31.2304, lng: 121.4737 },
+        'Asia/Hong_Kong': { lat: 22.3193, lng: 114.1694 },
+        'America/Sao_Paulo': { lat: -23.5505, lng: -46.6333 },
+        'America/Fortaleza': { lat: -3.7172, lng: -38.5433 },
+        'America/Toronto': { lat: 43.6532, lng: -79.3832 },
+        'America/Vancouver': { lat: 49.2827, lng: -123.1207 },
+        'Australia/Sydney': { lat: -33.8688, lng: 151.2093 },
+        'Australia/Melbourne': { lat: -37.8136, lng: 144.9631 },
+        'Australia/Perth': { lat: -31.9505, lng: 115.8605 },
     };
-    currentSettings.screen = {
-        ...currentSettings.screen,
-        width: scr.width,
-        height: scr.height,
-        colorDepth: scr.colorDepth,
-        pixelRatio: scr.pixelRatio
-    };
+
+    const baseLocation = timezoneLocations[coherentProfile.timezone] || { lat: 40.7128, lng: -74.006 };
     currentSettings.geolocation = {
         ...currentSettings.geolocation,
         mode: 'spoof',
-        latitude: loc.lat,
-        longitude: loc.lng
+        latitude: baseLocation.lat + (Math.random() - 0.5) * 0.1,
+        longitude: baseLocation.lng + (Math.random() - 0.5) * 0.1
     };
-    currentSettings.timezone = { ...currentSettings.timezone, timezone: loc.timezone, offset: loc.offset };
-    currentSettings.canvas = { ...currentSettings.canvas, noiseLevel };
 
     updateUI();
     await saveSettings();
 
-    // Inform user about reloading for full effect
-    showToast('🎲 All settings randomized! Reload open pages for new fingerprint.');
+    // Inform user about the coherent profile
+    showToast(`🎲 Coherent profile generated! Platform: ${coherentProfile.platform}`);
 }
 
 // ============================================

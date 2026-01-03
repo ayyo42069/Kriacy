@@ -365,86 +365,81 @@ async function handleMessage(
             }
 
             case 'RANDOMIZE_ALL': {
+                // Import the coherent profile generator
+                const { generateCoherentProfile, coherentProfileToSettings } = await import('../utils/profile-coherence');
+
                 const settings = await getSettings();
 
                 // Generate new fingerprint seed
                 settings.fingerprintSeed = (Date.now() ^ (Math.random() * 0xFFFFFFFF)) >>> 0;
 
-                // Random GPU profiles
-                const gpuProfiles = [
-                    { vendor: 'Google Inc. (Intel)', renderer: 'ANGLE (Intel, Intel(R) UHD Graphics 620 Direct3D11 vs_5_0 ps_5_0, D3D11)' },
-                    { vendor: 'Google Inc. (Intel)', renderer: 'ANGLE (Intel, Intel(R) Iris Plus Graphics 640 Direct3D11 vs_5_0 ps_5_0, D3D11)' },
-                    { vendor: 'Google Inc. (NVIDIA)', renderer: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1060 Direct3D11 vs_5_0 ps_5_0, D3D11)' },
-                    { vendor: 'Google Inc. (NVIDIA)', renderer: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11 vs_5_0 ps_5_0, D3D11)' },
-                    { vendor: 'Google Inc. (AMD)', renderer: 'ANGLE (AMD, AMD Radeon RX 580 Series Direct3D11 vs_5_0 ps_5_0, D3D11)' },
-                    { vendor: 'Google Inc. (Apple)', renderer: 'ANGLE (Apple, Apple M1, OpenGL 4.1)' },
-                ];
+                // Generate a fully coherent profile - all values are guaranteed to be logically consistent
+                // (e.g., Apple GPU only with Mac platform, proper hardware tiers, matching screen configs, etc.)
+                const coherentProfile = generateCoherentProfile();
 
-                // Random navigator profiles
-                const navProfiles = [
-                    { platform: 'Win32', hardwareConcurrency: 4, deviceMemory: 8, language: 'en-US' },
-                    { platform: 'Win32', hardwareConcurrency: 8, deviceMemory: 16, language: 'en-US' },
-                    { platform: 'Win32', hardwareConcurrency: 6, deviceMemory: 8, language: 'en-GB' },
-                    { platform: 'MacIntel', hardwareConcurrency: 8, deviceMemory: 8, language: 'en-US' },
-                    { platform: 'Linux x86_64', hardwareConcurrency: 8, deviceMemory: 8, language: 'en-US' },
-                ];
+                // Convert the coherent profile to settings format
+                const profileSettings = coherentProfileToSettings(coherentProfile, settings);
 
-                // Random screen profiles
-                const screenProfiles = [
-                    { width: 1920, height: 1080, colorDepth: 24, pixelRatio: 1 },
-                    { width: 1920, height: 1080, colorDepth: 24, pixelRatio: 1.25 },
-                    { width: 1536, height: 864, colorDepth: 24, pixelRatio: 1.25 },
-                    { width: 2560, height: 1440, colorDepth: 24, pixelRatio: 1 },
-                    { width: 1366, height: 768, colorDepth: 24, pixelRatio: 1 },
-                ];
+                // Apply coherent settings
+                settings.webgl = { ...settings.webgl, ...profileSettings.webgl };
+                settings.navigator = { ...settings.navigator, ...profileSettings.navigator };
+                settings.screen = { ...settings.screen, ...profileSettings.screen };
+                settings.timezone = { ...settings.timezone, ...profileSettings.timezone };
 
-                // Random location profiles
-                const locProfiles = [
-                    { lat: 40.7128, lng: -74.0060, timezone: 'America/New_York', offset: -300 },
-                    { lat: 34.0522, lng: -118.2437, timezone: 'America/Los_Angeles', offset: -480 },
-                    { lat: 51.5074, lng: -0.1278, timezone: 'Europe/London', offset: 0 },
-                    { lat: 48.8566, lng: 2.3522, timezone: 'Europe/Paris', offset: 60 },
-                    { lat: 35.6762, lng: 139.6503, timezone: 'Asia/Tokyo', offset: 540 },
-                ];
+                // Randomize canvas noise level
+                settings.canvas = { ...settings.canvas, noiseLevel: Math.floor(Math.random() * 20) + 5 };
 
-                const gpu = gpuProfiles[Math.floor(Math.random() * gpuProfiles.length)];
-                const nav = navProfiles[Math.floor(Math.random() * navProfiles.length)];
-                const scr = screenProfiles[Math.floor(Math.random() * screenProfiles.length)];
-                const loc = locProfiles[Math.floor(Math.random() * locProfiles.length)];
-                const noiseLevel = Math.floor(Math.random() * 20) + 5;
-
-                // Apply random settings
-                settings.webgl = { ...settings.webgl, vendor: gpu.vendor, renderer: gpu.renderer };
-                settings.navigator = {
-                    ...settings.navigator,
-                    platform: nav.platform,
-                    hardwareConcurrency: nav.hardwareConcurrency,
-                    deviceMemory: nav.deviceMemory,
-                    language: nav.language,
-                    languages: [nav.language, nav.language.split('-')[0]]
+                // Set geolocation to a coherent location based on timezone
+                const timezoneLocations: Record<string, { lat: number; lng: number }> = {
+                    'America/New_York': { lat: 40.7128, lng: -74.006 },
+                    'America/Chicago': { lat: 41.8781, lng: -87.6298 },
+                    'America/Denver': { lat: 39.7392, lng: -104.9903 },
+                    'America/Los_Angeles': { lat: 34.0522, lng: -118.2437 },
+                    'America/Phoenix': { lat: 33.4484, lng: -112.074 },
+                    'Europe/London': { lat: 51.5074, lng: -0.1278 },
+                    'Europe/Berlin': { lat: 52.52, lng: 13.405 },
+                    'Europe/Vienna': { lat: 48.2082, lng: 16.3738 },
+                    'Europe/Zurich': { lat: 47.3769, lng: 8.5417 },
+                    'Europe/Paris': { lat: 48.8566, lng: 2.3522 },
+                    'Europe/Madrid': { lat: 40.4168, lng: -3.7038 },
+                    'Europe/Rome': { lat: 41.9028, lng: 12.4964 },
+                    'Europe/Amsterdam': { lat: 52.3676, lng: 4.9041 },
+                    'Europe/Warsaw': { lat: 52.2297, lng: 21.0122 },
+                    'Europe/Moscow': { lat: 55.7558, lng: 37.6173 },
+                    'Europe/Kaliningrad': { lat: 54.7104, lng: 20.4522 },
+                    'Asia/Tokyo': { lat: 35.6762, lng: 139.6503 },
+                    'Asia/Seoul': { lat: 37.5665, lng: 126.978 },
+                    'Asia/Shanghai': { lat: 31.2304, lng: 121.4737 },
+                    'Asia/Hong_Kong': { lat: 22.3193, lng: 114.1694 },
+                    'America/Sao_Paulo': { lat: -23.5505, lng: -46.6333 },
+                    'America/Fortaleza': { lat: -3.7172, lng: -38.5433 },
+                    'America/Toronto': { lat: 43.6532, lng: -79.3832 },
+                    'America/Vancouver': { lat: 49.2827, lng: -123.1207 },
+                    'Australia/Sydney': { lat: -33.8688, lng: 151.2093 },
+                    'Australia/Melbourne': { lat: -37.8136, lng: 144.9631 },
+                    'Australia/Perth': { lat: -31.9505, lng: 115.8605 },
                 };
-                settings.screen = {
-                    ...settings.screen,
-                    width: scr.width,
-                    height: scr.height,
-                    colorDepth: scr.colorDepth,
-                    pixelRatio: scr.pixelRatio
-                };
+
+                const baseLocation = timezoneLocations[coherentProfile.timezone] || { lat: 40.7128, lng: -74.006 };
                 settings.geolocation = {
                     ...settings.geolocation,
                     mode: 'spoof',
-                    latitude: loc.lat + (Math.random() - 0.5) * 0.1,
-                    longitude: loc.lng + (Math.random() - 0.5) * 0.1
+                    latitude: baseLocation.lat + (Math.random() - 0.5) * 0.1,
+                    longitude: baseLocation.lng + (Math.random() - 0.5) * 0.1
                 };
-                settings.timezone = { ...settings.timezone, timezone: loc.timezone, offset: loc.offset };
-                settings.canvas = { ...settings.canvas, noiseLevel };
 
                 await saveSettings(settings);
                 await notifyAllTabs(settings);
                 await updateSecChRules(settings);
                 await updateCSPBypassRules(settings);
 
-                console.log('[Kriacy] All settings randomized with new seed:', settings.fingerprintSeed);
+                console.log('[Kriacy] All settings randomized with coherent profile:', {
+                    platform: coherentProfile.platform,
+                    gpu: coherentProfile.gpuRenderer.substring(0, 50) + '...',
+                    timezone: coherentProfile.timezone,
+                    language: coherentProfile.language,
+                    seed: settings.fingerprintSeed
+                });
                 return { success: true, data: settings };
             }
 
