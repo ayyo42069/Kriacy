@@ -4,6 +4,9 @@
 
 import { settings } from '../core/state';
 import { logSpoofAccess } from '../../utils/logger';
+import { createLogger } from '../../utils/system-logger';
+
+const log = createLogger('Timezone');
 
 // Guard against recursion
 let isHandlingTimezone = false;
@@ -373,7 +376,7 @@ export function initTimezoneSpoofing(): void {
         (window as any).Date = SpoofedDate;
 
     } catch (e) {
-        console.warn('[Kriacy] Failed to initialize Date constructor spoofing:', e);
+        log.warn('Failed to initialize Date constructor spoofing', { error: String(e) });
     }
 
     // ===================================
@@ -826,7 +829,7 @@ export function initTimezoneSpoofing(): void {
         makeNative(Date.prototype.setFullYear, 'setFullYear');
 
     } catch (e) {
-        console.warn('[Kriacy] Failed to initialize Date prototype spoofing:', e);
+        log.warn('Failed to initialize Date prototype spoofing', { error: String(e) });
     }
 
     // ===================================
@@ -875,8 +878,8 @@ export function initTimezoneSpoofing(): void {
         makeNative(Intl.DateTimeFormat.prototype.resolvedOptions, 'resolvedOptions');
 
     } catch (e) {
-        console.warn('[Kriacy] Failed to initialize Intl timezone spoofing:', e);
+        log.warn('Failed to initialize Intl timezone spoofing', { error: String(e) });
     }
 
-    console.log('[Kriacy] Timezone spoofing initialized with Date constructor interception');
+    log.init('Timezone spoofing initialized with Date constructor interception');
 }

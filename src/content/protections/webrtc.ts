@@ -2,6 +2,9 @@
 
 import { settings } from '../core/state';
 import { logSpoofAccess } from '../../utils/logger';
+import { createLogger } from '../../utils/system-logger';
+
+const log = createLogger('WebRTC');
 
 /**
  * Initialize WebRTC protection
@@ -14,6 +17,7 @@ export function initWebRTCProtection(): void {
     const OriginalRTCPeerConnection = window.RTCPeerConnection;
 
     if (OriginalRTCPeerConnection) {
+        log.init('Initializing WebRTC protection', { mode: settings.webrtc?.mode });
         (window as any).RTCPeerConnection = function (config?: RTCConfiguration): RTCPeerConnection {
             if (settings.webrtc?.enabled && settings.webrtc.mode !== 'default') {
                 if (settings.webrtc.mode === 'block') {

@@ -5,6 +5,9 @@
 import { settings, getFingerprintSeed } from '../core/state';
 import { mulberry32 } from '../core/utils';
 import { logSpoofAccess } from '../../utils/logger';
+import { createLogger } from '../../utils/system-logger';
+
+const log = createLogger('WebGLCanvas');
 
 // Store original WebGL methods to avoid re-capturing
 const w = window as any;
@@ -202,7 +205,7 @@ function interceptGetContext(): void {
  * This enhances the existing WebGL protection with better GPU fingerprint defense
  */
 export function initWebGLCanvasProtection(): void {
-    console.log('[Kriacy] Initializing WebGL Canvas (GPU) fingerprint protection');
+    log.init('Initializing WebGL Canvas (GPU) fingerprint protection');
 
     enhanceWebGL1ReadPixels();
     enhanceWebGL2ReadPixels();

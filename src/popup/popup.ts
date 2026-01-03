@@ -81,11 +81,8 @@ async function saveSettings(): Promise<void> {
 
 // Randomize all fingerprint values
 async function randomizeAll(): Promise<void> {
-    console.log('[Kriacy Popup] Randomize button clicked');
-
     try {
         const response = await chrome.runtime.sendMessage({ action: 'RANDOMIZE_ALL' });
-        console.log('[Kriacy Popup] Randomize response:', response);
 
         if (response?.success) {
             // Update local settings with new randomized values

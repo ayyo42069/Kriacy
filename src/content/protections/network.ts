@@ -3,11 +3,15 @@
 import { settings, getFingerprintSeed } from '../core/state';
 import { mulberry32 } from '../core/utils';
 import { logSpoofAccess } from '../../utils/logger';
+import { createLogger } from '../../utils/system-logger';
+
+const log = createLogger('Network');
 
 /**
  * Initialize battery API spoofing
  */
 export function initBatterySpoofing(): void {
+    log.init('Initializing battery API spoofing');
     if ('getBattery' in navigator) {
         (navigator as any).getBattery = async function (): Promise<any> {
             if (settings.battery) {
@@ -53,6 +57,7 @@ export function initBatterySpoofing(): void {
  * Initialize network information spoofing
  */
 export function initNetworkSpoofing(): void {
+    log.init('Initializing network information spoofing');
     try {
         Object.defineProperty(navigator, 'connection', {
             get: function () {
@@ -114,6 +119,7 @@ try {
  * Initialize plugins and MIME types spoofing
  */
 export function initPluginsSpoofing(): void {
+    log.init('Initializing plugins spoofing');
     try {
         Object.defineProperty(navigator, 'plugins', {
             get: function () {

@@ -9,6 +9,9 @@
 // - 'failed own property names': Object.getOwnPropertyNames must equal ['length','name']
 // - 'failed own keys names': Reflect.ownKeys must equal ['length','name']
 
+import { createLogger } from '../../utils/system-logger';
+
+const log = createLogger('Stealth');
 const w = window as any;
 
 // Prevent double initialization
@@ -214,6 +217,7 @@ export function initToStringProtection(): void {
 
     // Make toString itself look native
     makeNative(Function.prototype.toString, 'toString');
+    log.init('toString protection initialized');
 
     // Also patch the toString's toString (yes, really - detection scripts check this)
     const toStringToString = function (): string {
@@ -414,6 +418,8 @@ export function initIframeProxyProtection(): void {
  * This should be called BEFORE any other protections
  */
 export function initStealthProtections(): void {
+    log.init('Initializing stealth protections');
+
     // 1. Patch toString FIRST - this is critical
     initToStringProtection();
 
@@ -429,6 +435,7 @@ export function initStealthProtections(): void {
  * to make all the patched methods look native
  */
 export function finalizeWebGLStealth(): void {
+    log.init('Finalizing WebGL stealth protections');
     initWebGLStealthProtection();
     initCanvasStealthProtection();
     initNavigatorStealthProtection();

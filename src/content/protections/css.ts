@@ -2,6 +2,9 @@
 
 import { settings, getFingerprintSeed } from '../core/state';
 import { mulberry32, hashString } from '../core/utils';
+import { createLogger } from '../../utils/system-logger';
+
+const log = createLogger('CSS');
 
 // CSS properties commonly used for system styles fingerprinting
 const fingerprintedCSSProps = new Set([
@@ -56,6 +59,8 @@ function modifyCSSValue(prop: string, value: string): string {
  * Initialize CSS system styles fingerprint protection
  */
 export function initCSSProtection(): void {
+    log.init('Initializing CSS system styles protection');
+
     // Override CSSStyleDeclaration.prototype.getPropertyValue
     const originalGetPropertyValue = CSSStyleDeclaration.prototype.getPropertyValue;
     CSSStyleDeclaration.prototype.getPropertyValue = function (property: string): string {

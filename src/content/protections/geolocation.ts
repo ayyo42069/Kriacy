@@ -1,6 +1,9 @@
 // Geolocation spoofing
 
 import { settings } from '../core/state';
+import { createLogger } from '../../utils/system-logger';
+
+const log = createLogger('Geolocation');
 
 const originalGetCurrentPosition = navigator.geolocation.getCurrentPosition.bind(navigator.geolocation);
 const originalWatchPosition = navigator.geolocation.watchPosition.bind(navigator.geolocation);
@@ -33,6 +36,8 @@ function createFakePosition(): GeolocationPosition {
  * Initialize geolocation spoofing
  */
 export function initGeolocationSpoofing(): void {
+    log.init('Initializing geolocation spoofing', { mode: settings.geolocation?.mode });
+
     navigator.geolocation.getCurrentPosition = function (
         successCallback: PositionCallback,
         errorCallback?: PositionErrorCallback | null,

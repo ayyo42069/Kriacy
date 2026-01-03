@@ -1,6 +1,9 @@
 // Worker script injection for consistent fingerprinting across main thread and Workers
 // Addresses CreepJS hasBadWebGL detection by ensuring WebGL values match in Workers
 
+import { createLogger } from '../../utils/system-logger';
+
+const log = createLogger('WorkerInject');
 const w = window as any;
 
 // Store original constructors IMMEDIATELY at module load time
@@ -137,6 +140,7 @@ function getWorkerSpoofCode(): string {
  * Intercept Blob creation to inject spoofing code into JavaScript blobs
  */
 export function initBlobInterception(): void {
+    log.init('Initializing Blob interception');
     if (!OriginalBlob) return;
 
     w.Blob = function (parts?: BlobPart[], options?: BlobPropertyBag): Blob {
@@ -233,6 +237,7 @@ function checkCSPForBlobWorkers(): boolean {
  * Intercept Worker creation to inject spoofing code
  */
 export function initWorkerInterception(): void {
+    log.init('Initializing Worker interception');
     if (!OriginalWorker) return;
 
     w.Worker = function (scriptURL: string | URL, options?: WorkerOptions): Worker {
@@ -316,6 +321,7 @@ export function initWorkerInterception(): void {
  * CreepJS also uses SharedWorkers
  */
 export function initSharedWorkerInterception(): void {
+    log.init('Initializing SharedWorker interception');
     if (!OriginalSharedWorker) return;
 
     w.SharedWorker = function (scriptURL: string | URL, options?: string | WorkerOptions): SharedWorker {
@@ -425,6 +431,8 @@ export function setWorkerSettings(workerSettings: {
 export function initWorkerProtection(): void {
     if (w.__KRIACY_WORKER_PROTECTION_ACTIVE__) return;
     w.__KRIACY_WORKER_PROTECTION_ACTIVE__ = true;
+
+    log.init('Initializing worker protection');
 
     initBlobInterception();
     initWorkerInterception();

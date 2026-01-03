@@ -3,6 +3,9 @@
 import { settings, getFingerprintSeed } from '../core/state';
 import { mulberry32, hashString } from '../core/utils';
 import { logSpoofAccess } from '../../utils/logger';
+import { createLogger } from '../../utils/system-logger';
+
+const log = createLogger('Fonts');
 
 // Common fonts that should appear as installed
 const COMMON_FONTS = [
@@ -26,6 +29,8 @@ function isCommonFont(fontName: string): boolean {
  * FontFace.load, and measureText
  */
 export function initFontProtection(): void {
+    log.init('Initializing font fingerprint protection');
+
     // Override FontFace check
     if (document.fonts) {
         const originalCheck = document.fonts.check.bind(document.fonts);

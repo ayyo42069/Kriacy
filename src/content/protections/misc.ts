@@ -2,6 +2,9 @@
 
 import { settings, getFingerprintSeed } from '../core/state';
 import { mulberry32, hashString } from '../core/utils';
+import { createLogger } from '../../utils/system-logger';
+
+const log = createLogger('Misc');
 
 /**
  * Initialize performance API timing protection
@@ -237,7 +240,7 @@ export function initSendBeaconProtection(): void {
         navigator.sendBeacon = function (url: string, data?: BodyInit | null): boolean {
             // Just pass through but log for debugging
             if (settings.navigator?.enabled) {
-                console.log('[Kriacy] sendBeacon intercepted:', url);
+                log.debug('sendBeacon intercepted', { url });
             }
             return originalSendBeacon(url, data);
         };
@@ -373,7 +376,7 @@ export function initServiceWorkerProtection(): void {
 
         // Check if blocking is enabled
         if (settings.misc?.blockServiceWorkers) {
-            console.log('[Kriacy] Service Worker registration BLOCKED:', url);
+            log.protection('Service Worker registration BLOCKED', { url });
             // Return a rejected promise that mimics SecurityError
             return Promise.reject(new DOMException(
                 'Service Worker registration blocked by privacy settings.',
@@ -381,7 +384,7 @@ export function initServiceWorkerProtection(): void {
             ));
         }
 
-        console.log('[Kriacy] Service Worker registration:', url);
+        log.debug('Service Worker registration', { url });
         return originalServiceWorkerRegister(scriptURL, options);
     };
 }
@@ -492,7 +495,7 @@ export function initWorkerWebGLSpoofing(): void {
                 return worker;
             } catch (e) {
                 // Fall back to original if our interception fails
-                console.warn('[Kriacy] Worker interception failed:', e);
+                log.warn('Worker interception failed', { error: String(e) });
                 return new OriginalWorker(scriptURL, options);
             }
         }
@@ -609,7 +612,7 @@ export function initCredentialsProtection(): void {
         const originalCredentialsGet = (navigator as any).credentials.get.bind((navigator as any).credentials);
         (navigator as any).credentials.get = async function (options?: CredentialRequestOptions): Promise<Credential | null> {
             if (settings.misc?.credentials) {
-                console.log('[Kriacy] Credential request intercepted');
+                log.protection('Credential request intercepted');
                 // Allow password credentials but block PublicKey for fingerprinting protection
                 if (options?.publicKey) {
                     throw new DOMException('The operation was aborted.', 'AbortError');

@@ -3,6 +3,9 @@
 import { settings, getFingerprintSeed } from '../core/state';
 import { mulberry32 } from '../core/utils';
 import { setGPUProfile } from './worker-inject';
+import { createLogger } from '../../utils/system-logger';
+
+const log = createLogger('WebGL');
 
 // Global guard to prevent double-patching
 const w = window as any;
@@ -481,6 +484,7 @@ function initIframeProtection(): void {
 // This ensures patches are in place BEFORE any page scripts run
 if (!w.__KRIACY_WEBGL_PATCHED__) {
     w.__KRIACY_WEBGL_PATCHED__ = true;
+    log.init('Initializing WebGL fingerprint protection');
     patchWebGLContext(WebGLRenderingContext.prototype, 'WebGL');
     if (typeof WebGL2RenderingContext !== 'undefined') {
         patchWebGLContext(WebGL2RenderingContext.prototype, 'WebGL2');

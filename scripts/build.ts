@@ -71,6 +71,14 @@ async function buildTypeScript() {
         naming: "logs.js",
     });
 
+    // Build system logs page
+    await Bun.build({
+        entrypoints: [join(SRC, "system-logs/system-logs.ts")],
+        outdir: DIST,
+        target: "browser",
+        naming: "system-logs.js",
+    });
+
     // Build whoami page
     await Bun.build({
         entrypoints: [join(SRC, "whoami/whoami.ts")],
@@ -93,6 +101,8 @@ async function copyStaticFiles() {
     await cp(join(SRC, "options/options.css"), join(DIST, "options.css"));
     await cp(join(SRC, "logs/logs.html"), join(DIST, "logs.html"));
     await cp(join(SRC, "logs/logs.css"), join(DIST, "logs.css"));
+    await cp(join(SRC, "system-logs/system-logs.html"), join(DIST, "system-logs.html"));
+    await cp(join(SRC, "system-logs/system-logs.css"), join(DIST, "system-logs.css"));
     await cp(join(SRC, "whoami/whoami.html"), join(DIST, "whoami.html"));
     await cp(join(SRC, "whoami/whoami.css"), join(DIST, "whoami.css"));
 

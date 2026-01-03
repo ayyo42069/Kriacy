@@ -1,65 +1,42 @@
-// Kriacy Logs Viewer - Cozy Modern Theme
-// Smart updates: only refresh when new logs are detected
+// Kriacy System Logs Viewer
+// Displays internal extension logs in a comprehensive interface
 
-interface SpoofLogEntry {
+interface SystemLogEntry {
     id: string;
     timestamp: number;
-    url: string;
-    hostname: string;
-    apiType: string;
-    method: string;
+    level: 'debug' | 'info' | 'warn' | 'error';
+    category: string;
+    module: string;
+    message: string;
     details?: string;
-    count?: number;
-}
-
-interface ApiStats {
-    [key: string]: number;
+    context?: Record<string, unknown>;
 }
 
 // Configuration
 const CONFIG = {
-    REFRESH_INTERVAL: 5000, // Check every 5 seconds
-    ITEMS_PER_PAGE: 50,
+    REFRESH_INTERVAL: 5000,
+    ITEMS_PER_PAGE: 100,
     DEBOUNCE_DELAY: 300,
-};
-
-// API Colors for chart (warm cozy palette)
-const API_COLORS: { [key: string]: string } = {
-    canvas: '#d4a0a0',
-    webgl: '#daa06d',
-    'webgl-canvas': '#daa06d',
-    audio: '#a3c9a3',
-    navigator: '#a3c9d4',
-    screen: '#c4b0d4',
-    geolocation: '#d4a0b8',
-    webrtc: '#a3c9be',
-    timezone: '#d4a574',
-    battery: '#c4c9a3',
-    network: '#a3c9d4',
-    fonts: '#c4b0d4',
-    media: '#d4a0ae',
-    misc: '#b0b0a0',
-    svg: '#d4a0b0',
-    'text-render': '#b8c9a3',
 };
 
 // DOM Elements
 const elements = {
-    totalBlocked: document.getElementById('totalBlocked') as HTMLSpanElement,
-    uniqueSites: document.getElementById('uniqueSites') as HTMLSpanElement,
-    topApi: document.getElementById('topApi') as HTMLSpanElement,
+    totalLogs: document.getElementById('totalLogs') as HTMLSpanElement,
+    errorCount: document.getElementById('errorCount') as HTMLSpanElement,
+    warnCount: document.getElementById('warnCount') as HTMLSpanElement,
     lastUpdate: document.getElementById('lastUpdate') as HTMLSpanElement,
 
     searchInput: document.getElementById('searchInput') as HTMLInputElement,
     searchClear: document.getElementById('searchClear') as HTMLElement,
-    apiFilter: document.getElementById('apiFilter') as HTMLSelectElement,
+    levelFilter: document.getElementById('levelFilter') as HTMLSelectElement,
+    categoryFilter: document.getElementById('categoryFilter') as HTMLSelectElement,
+
     pauseBtn: document.getElementById('pauseBtn') as HTMLButtonElement,
     refreshBtn: document.getElementById('refreshBtn') as HTMLButtonElement,
     exportBtn: document.getElementById('exportBtn') as HTMLButtonElement,
     clearBtn: document.getElementById('clearBtn') as HTMLButtonElement,
 
     liveIndicator: document.getElementById('liveIndicator') as HTMLDivElement,
-    apiBreakdown: document.getElementById('apiBreakdown') as HTMLDivElement,
     logsTable: document.getElementById('logsTable') as HTMLTableElement,
     logsBody: document.getElementById('logsBody') as HTMLTableSectionElement,
     emptyState: document.getElementById('emptyState') as HTMLDivElement,
@@ -76,8 +53,8 @@ const elements = {
 };
 
 // State
-let allLogs: SpoofLogEntry[] = [];
-let lastLogHash = ''; // Track if logs changed
+let allLogs: SystemLogEntry[] = [];
+let lastLogHash = '';
 let isPaused = false;
 let refreshInterval: number | null = null;
 let currentPage = 1;
@@ -85,25 +62,14 @@ let currentPage = 1;
 /**
  * Generate a hash of logs to detect changes
  */
-function generateLogHash(logs: SpoofLogEntry[]): string {
+function generateLogHash(logs: SystemLogEntry[]): string {
     if (logs.length === 0) return 'empty';
-
-    // Hash based on count of logs and sum of counts + latest timestamp
-    let totalCount = 0;
-    let latestTimestamp = 0;
-
-    for (const log of logs) {
-        totalCount += log.count || 1;
-        if (log.timestamp > latestTimestamp) {
-            latestTimestamp = log.timestamp;
-        }
-    }
-
-    return `${logs.length}-${totalCount}-${latestTimestamp}`;
+    const latest = logs.length > 0 ? logs[logs.length - 1]?.timestamp || 0 : 0;
+    return `${logs.length}-${latest}`;
 }
 
 /**
- * Format timestamp to readable time string
+ * Format timestamp
  */
 function formatTime(timestamp: number): string {
     const date = new Date(timestamp);
@@ -117,15 +83,12 @@ function formatTime(timestamp: number): string {
         hour12: false
     });
 
-    if (isToday) {
-        return time;
-    }
-
+    if (isToday) return time;
     return `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} ${time}`;
 }
 
 /**
- * Format relative time (e.g., "2m ago")
+ * Format relative time
  */
 function formatRelativeTime(timestamp: number): string {
     const now = Date.now();
@@ -145,15 +108,15 @@ function formatRelativeTime(timestamp: number): string {
 /**
  * Load logs from service worker
  */
-async function loadLogs(): Promise<SpoofLogEntry[]> {
+async function loadLogs(): Promise<SystemLogEntry[]> {
     try {
-        const response = await chrome.runtime.sendMessage({ action: 'GET_LOGS' });
+        const response = await chrome.runtime.sendMessage({ action: 'GET_SYSTEM_LOGS' });
         if (response?.success && response.data) {
             return response.data;
         }
         return [];
     } catch (e) {
-        console.error('[Kriacy Logs] Error loading logs:', e);
+        console.error('[Kriacy System Logs] Error loading logs:', e);
         return [];
     }
 }
@@ -163,109 +126,57 @@ async function loadLogs(): Promise<SpoofLogEntry[]> {
  */
 async function clearAllLogs(): Promise<void> {
     try {
-        await chrome.runtime.sendMessage({ action: 'CLEAR_LOGS' });
-        showToast('All logs cleared');
+        await chrome.runtime.sendMessage({ action: 'CLEAR_SYSTEM_LOGS' });
+        showToast('All system logs cleared');
     } catch (e) {
-        console.error('[Kriacy Logs] Error clearing logs:', e);
+        console.error('[Kriacy System Logs] Error clearing logs:', e);
         showToast('Failed to clear logs');
     }
 }
 
 /**
- * Update statistics (without flashing)
+ * Update statistics
  */
-function updateStats(logs: SpoofLogEntry[]): void {
-    const totalCount = logs.reduce((acc, log) => acc + (log.count || 1), 0);
-    elements.totalBlocked.textContent = totalCount.toLocaleString();
+function updateStats(logs: SystemLogEntry[]): void {
+    elements.totalLogs.textContent = logs.length.toLocaleString();
 
-    const uniqueHostnames = new Set(logs.map(l => l.hostname));
-    elements.uniqueSites.textContent = uniqueHostnames.size.toString();
+    const errorCount = logs.filter(l => l.level === 'error').length;
+    const warnCount = logs.filter(l => l.level === 'warn').length;
+
+    elements.errorCount.textContent = errorCount.toString();
+    elements.warnCount.textContent = warnCount.toString();
 
     if (logs.length > 0) {
-        const apiCounts: ApiStats = {};
-        logs.forEach(l => {
-            const count = l.count || 1;
-            apiCounts[l.apiType] = (apiCounts[l.apiType] || 0) + count;
-        });
-
-        const topApi = Object.entries(apiCounts)
-            .sort((a, b) => b[1] - a[1])[0];
-
-        if (topApi) {
-            elements.topApi.textContent = capitalizeFirst(topApi[0]);
-        }
-
         const latestTimestamp = Math.max(...logs.map(l => l.timestamp));
         elements.lastUpdate.textContent = formatRelativeTime(latestTimestamp);
     } else {
-        elements.topApi.textContent = '-';
         elements.lastUpdate.textContent = '-';
     }
 }
 
 /**
- * Update API breakdown chart
- */
-function updateApiBreakdown(logs: SpoofLogEntry[]): void {
-    const apiCounts: ApiStats = {};
-    let total = 0;
-
-    logs.forEach(l => {
-        const count = l.count || 1;
-        apiCounts[l.apiType] = (apiCounts[l.apiType] || 0) + count;
-        total += count;
-    });
-
-    const sortedApis = Object.entries(apiCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 6);
-
-    if (sortedApis.length === 0) {
-        elements.apiBreakdown.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 16px;">No data yet</div>';
-        return;
-    }
-
-    const maxCount = sortedApis[0][1];
-
-    let html = '';
-    sortedApis.forEach(([api, count]) => {
-        const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
-        const width = (count / maxCount) * 100;
-        const color = API_COLORS[api] || API_COLORS.misc;
-
-        html += `
-            <div class="api-bar-item">
-                <span class="api-bar-label">${api}</span>
-                <div class="api-bar-track">
-                    <div class="api-bar-fill" style="width: ${width}%; background: ${color};" data-count="${count}"></div>
-                </div>
-                <span class="api-bar-percentage">${percentage}%</span>
-            </div>
-        `;
-    });
-
-    elements.apiBreakdown.innerHTML = html;
-}
-
-/**
  * Get filtered logs
  */
-function getFilteredLogs(): SpoofLogEntry[] {
-    const apiValue = elements.apiFilter.value;
+function getFilteredLogs(): SystemLogEntry[] {
+    const levelValue = elements.levelFilter.value;
+    const categoryValue = elements.categoryFilter.value;
     const searchValue = elements.searchInput.value.toLowerCase().trim();
 
     return allLogs.filter(log => {
-        if (apiValue !== 'all' && log.apiType !== apiValue) {
+        if (levelValue !== 'all' && log.level !== levelValue) {
+            return false;
+        }
+
+        if (categoryValue !== 'all' && log.category !== categoryValue) {
             return false;
         }
 
         if (searchValue) {
             const searchableText = [
-                log.hostname,
-                log.url,
-                log.apiType,
-                log.method,
-                log.details || ''
+                log.module,
+                log.message,
+                log.details || '',
+                log.category
             ].join(' ').toLowerCase();
 
             if (!searchableText.includes(searchValue)) {
@@ -278,13 +189,11 @@ function getFilteredLogs(): SpoofLogEntry[] {
 }
 
 /**
- * Render logs to table (incremental update to prevent flashing)
+ * Render logs to table
  */
-function renderLogs(logs: SpoofLogEntry[], force = false): void {
-    // Check if we need to re-render
+function renderLogs(logs: SystemLogEntry[], force = false): void {
     const newHash = generateLogHash(logs);
     if (!force && newHash === lastLogHash) {
-        // Just update relative times if needed
         updateRelativeTimes();
         return;
     }
@@ -311,20 +220,13 @@ function renderLogs(logs: SpoofLogEntry[], force = false): void {
     // Build table rows
     let html = '';
     pageItems.forEach(log => {
-        const count = log.count || 1;
-        const countClass = count >= 10 ? 'high' : '';
-        const countBadge = count > 1 ? `<span class="count-badge ${countClass}">${count > 999 ? '999+' : count}</span>` : '';
-
         html += `
             <tr data-log-id="${escapeHtml(log.id)}">
                 <td class="time">${formatTime(log.timestamp)}</td>
-                <td>${countBadge}</td>
-                <td class="site">
-                    <a href="${escapeHtml(log.url)}" target="_blank" title="${escapeHtml(log.url)}">${escapeHtml(log.hostname)}</a>
-                </td>
-                <td><span class="api-badge ${log.apiType}">${log.apiType}</span></td>
-                <td class="method">${escapeHtml(log.method)}</td>
-                <td class="details" title="${escapeHtml(log.details || '')}">${escapeHtml(log.details || '-')}</td>
+                <td><span class="level-badge ${log.level}">${log.level}</span></td>
+                <td><span class="category-badge ${log.category}">${log.category}</span></td>
+                <td class="module">${escapeHtml(log.module)}</td>
+                <td class="message" title="${escapeHtml(log.message)}">${escapeHtml(log.message)}</td>
             </tr>
         `;
     });
@@ -341,14 +243,11 @@ function renderLogs(logs: SpoofLogEntry[], force = false): void {
 
     // Add click handlers for detail view
     elements.logsBody.querySelectorAll('tr').forEach(row => {
-        row.addEventListener('click', (e) => {
-            if ((e.target as HTMLElement).tagName === 'A') return;
-
+        row.addEventListener('click', () => {
             const logId = row.dataset.logId;
             const log = allLogs.find(l => l.id === logId);
             if (log) openLogDetail(log);
         });
-        row.style.cursor = 'pointer';
     });
 }
 
@@ -365,31 +264,41 @@ function updateRelativeTimes(): void {
 /**
  * Open log detail modal
  */
-function openLogDetail(log: SpoofLogEntry): void {
+function openLogDetail(log: SystemLogEntry): void {
+    let contextHtml = '';
+    if (log.context) {
+        try {
+            contextHtml = `
+                <div class="detail-row">
+                    <span class="detail-label">Context</span>
+                    <span class="detail-value mono">${escapeHtml(JSON.stringify(log.context, null, 2))}</span>
+                </div>
+            `;
+        } catch {
+            // Ignore formatting errors
+        }
+    }
+
     elements.modalBody.innerHTML = `
         <div class="detail-row">
             <span class="detail-label">Timestamp</span>
             <span class="detail-value">${new Date(log.timestamp).toLocaleString()}</span>
         </div>
         <div class="detail-row">
-            <span class="detail-label">Site</span>
-            <span class="detail-value"><a href="${escapeHtml(log.url)}" target="_blank">${escapeHtml(log.hostname)}</a></span>
+            <span class="detail-label">Level</span>
+            <span class="detail-value"><span class="level-badge ${log.level}">${log.level}</span></span>
         </div>
         <div class="detail-row">
-            <span class="detail-label">Full URL</span>
-            <span class="detail-value mono">${escapeHtml(log.url)}</span>
+            <span class="detail-label">Category</span>
+            <span class="detail-value"><span class="category-badge ${log.category}">${log.category}</span></span>
         </div>
         <div class="detail-row">
-            <span class="detail-label">API Type</span>
-            <span class="detail-value"><span class="api-badge ${log.apiType}">${log.apiType}</span></span>
+            <span class="detail-label">Module</span>
+            <span class="detail-value mono">${escapeHtml(log.module)}</span>
         </div>
         <div class="detail-row">
-            <span class="detail-label">Method</span>
-            <span class="detail-value mono">${escapeHtml(log.method)}</span>
-        </div>
-        <div class="detail-row">
-            <span class="detail-label">Count</span>
-            <span class="detail-value">${(log.count || 1).toLocaleString()} times</span>
+            <span class="detail-label">Message</span>
+            <span class="detail-value">${escapeHtml(log.message)}</span>
         </div>
         ${log.details ? `
         <div class="detail-row">
@@ -397,6 +306,7 @@ function openLogDetail(log: SpoofLogEntry): void {
             <span class="detail-value mono">${escapeHtml(log.details)}</span>
         </div>
         ` : ''}
+        ${contextHtml}
     `;
 
     elements.modal.classList.add('open');
@@ -424,21 +334,18 @@ function showToast(message: string, duration = 2500): void {
 }
 
 /**
- * Check for new logs and update only if changed
+ * Check for new logs
  */
 async function checkForUpdates(): Promise<void> {
     const newLogs = await loadLogs();
     const newHash = generateLogHash(newLogs);
 
-    // Only update if logs actually changed
     if (newHash !== lastLogHash) {
         allLogs = newLogs;
         const filtered = getFilteredLogs();
         renderLogs(filtered);
         updateStats(allLogs);
-        updateApiBreakdown(allLogs);
     } else {
-        // Just update relative time display
         updateRelativeTimes();
     }
 }
@@ -448,11 +355,10 @@ async function checkForUpdates(): Promise<void> {
  */
 async function forceRefresh(): Promise<void> {
     allLogs = await loadLogs();
-    lastLogHash = ''; // Force re-render
+    lastLogHash = '';
     const filtered = getFilteredLogs();
     renderLogs(filtered, true);
     updateStats(allLogs);
-    updateApiBreakdown(allLogs);
 }
 
 /**
@@ -469,7 +375,6 @@ function exportLogs(): void {
     const exportData = {
         exportedAt: new Date().toISOString(),
         totalEntries: filtered.length,
-        totalBlocked: filtered.reduce((acc, l) => acc + (l.count || 1), 0),
         logs: filtered
     };
 
@@ -479,7 +384,7 @@ function exportLogs(): void {
 
     const a = document.createElement('a');
     a.href = url;
-    a.download = `kriacy-logs-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `kriacy-system-logs-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
 
     URL.revokeObjectURL(url);
@@ -549,13 +454,6 @@ function escapeHtml(text: string): string {
 }
 
 /**
- * Capitalize first letter
- */
-function capitalizeFirst(text: string): string {
-    return text.charAt(0).toUpperCase() + text.slice(1);
-}
-
-/**
  * Initialize
  */
 async function init(): Promise<void> {
@@ -574,7 +472,7 @@ async function init(): Promise<void> {
     elements.pauseBtn.addEventListener('click', togglePause);
 
     elements.clearBtn.addEventListener('click', async () => {
-        if (confirm('Clear all logs?')) {
+        if (confirm('Clear all system logs?')) {
             await clearAllLogs();
             await forceRefresh();
         }
@@ -584,12 +482,13 @@ async function init(): Promise<void> {
 
     // Filters with debounce
     const handleFilter = debounce(() => {
-        lastLogHash = ''; // Force re-render on filter change
+        lastLogHash = '';
         const filtered = getFilteredLogs();
         renderLogs(filtered, true);
     }, CONFIG.DEBOUNCE_DELAY);
 
-    elements.apiFilter.addEventListener('change', handleFilter);
+    elements.levelFilter.addEventListener('change', handleFilter);
+    elements.categoryFilter.addEventListener('change', handleFilter);
 
     elements.searchInput.addEventListener('input', () => {
         if (elements.searchInput.value) {

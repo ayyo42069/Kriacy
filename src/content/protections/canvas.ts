@@ -3,6 +3,9 @@
 import { settings, getFingerprintSeed, RECT_NOISE } from '../core/state';
 import { mulberry32 } from '../core/utils';
 import { logSpoofAccess } from '../../utils/logger';
+import { createLogger } from '../../utils/system-logger';
+
+const log = createLogger('Canvas');
 
 // Use window to persist originals across script re-evaluations
 const w = window as any;
@@ -99,6 +102,7 @@ function modifyDataURL(dataURL: string): string {
  * Initialize canvas protection
  */
 export function initCanvasProtection(): void {
+    log.init('Initializing canvas fingerprint protection');
     HTMLCanvasElement.prototype.toDataURL = function (type?: string, quality?: any): string {
         if (inToDataURL) {
             return originalToDataURL.call(this, type, quality);
@@ -117,9 +121,6 @@ export function initCanvasProtection(): void {
             const originalResult = originalToDataURL.call(this, type, quality);
             logSpoofAccess('canvas', 'toDataURL', `${this.width}x${this.height}`);
             const modifiedResult = modifyDataURL(originalResult);
-
-            console.log('[Kriacy DEBUG] Canvas toDataURL - seed:', getFingerprintSeed().toString(16));
-            console.log('[Kriacy DEBUG] Original vs Modified different?', originalResult !== modifiedResult);
 
             return modifiedResult;
         } finally {

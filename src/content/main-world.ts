@@ -26,6 +26,9 @@ import { initCSSProtection } from './protections/css';
 import { initAllMiscProtections } from './protections/misc';
 import { initWebGLCanvasProtection } from './protections/webgl-canvas';
 import { initTextRenderingProtection } from './protections/text-rendering';
+import { createLogger } from '../utils/system-logger';
+
+const log = createLogger('MainWorld');
 
 (function () {
     'use strict';
@@ -44,7 +47,7 @@ import { initTextRenderingProtection } from './protections/text-rendering';
 
     // If skipLocalFiles is enabled (default) and this is a local file, skip all protections
     if (settings.skipLocalFiles !== false && isLocalFile) {
-        console.log('[Kriacy] Skipping protections for local file:', window.location.href);
+        log.info('Skipping protections for local file', { href: window.location.href });
         return;
     }
 
@@ -69,7 +72,7 @@ import { initTextRenderingProtection } from './protections/text-rendering';
         const vendor = settings.webgl.vendor || 'Google Inc. (Intel)';
         const renderer = settings.webgl.renderer || 'ANGLE (Intel, Intel(R) UHD Graphics 620 Direct3D11 vs_5_0 ps_5_0, D3D11)';
         setGPUProfile(vendor, renderer);
-        console.log('[Kriacy] GPU profile set for workers:', { vendor, renderer });
+        log.init('GPU profile set for workers', { vendor, renderer });
     }
 
     // Also set navigator settings for workers
@@ -155,7 +158,7 @@ import { initTextRenderingProtection } from './protections/text-rendering';
     // Initialization Complete
     // ============================================
 
-    console.log('[Kriacy] All protections active! Session:', getFingerprintSeed().toString(16));
-    console.log('[Kriacy] Modules loaded: Stealth, Canvas, Audio, WebGL, WebGL-Canvas, WebRTC, Navigator, Screen, MediaQuery, Geolocation, Timezone, Media, Network, Fonts, CSS, Misc, TextRender');
+    log.init('All protections active!', { session: getFingerprintSeed().toString(16) });
+    log.init('Modules loaded', { modules: 'Stealth, Canvas, Audio, WebGL, WebGL-Canvas, WebRTC, Navigator, Screen, MediaQuery, Geolocation, Timezone, Media, Network, Fonts, CSS, Misc, TextRender' });
 
 })();

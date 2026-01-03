@@ -2,7 +2,7 @@
 import { getSettings, saveSettings } from '../utils/storage';
 import { SpoofSettings, ExtensionMessage, ExtensionResponse, DEFAULT_SETTINGS } from '../types';
 
-console.log('[Kriacy] Service worker initialized');
+// Service worker initialization is logged after swLog is defined
 
 // Log storage constants
 const LOGS_STORAGE_KEY = '__kriacy_spoof_logs__';
@@ -51,7 +51,7 @@ async function appendLogs(entries: any[]): Promise<void> {
         }
 
         await chrome.storage.local.set({ [LOGS_STORAGE_KEY]: logs });
-        console.log('[Kriacy] Stored', entries.length, 'log entries, total:', logs.length);
+        swLog('debug', 'Stored log entries', { count: entries.length, total: logs.length });
     } catch (e) {
         console.error('[Kriacy] Error appending logs:', e);
     }
@@ -74,6 +74,71 @@ async function clearLogs(): Promise<void> {
         console.error('[Kriacy] Error clearing logs:', e);
     }
 }
+
+// System logs storage constants (internal extension logs)
+const SYSTEM_LOGS_STORAGE_KEY = '__kriacy_system_logs__';
+const MAX_SYSTEM_LOGS = 1000; // Keep more system logs for debugging
+
+// System log storage functions
+async function appendSystemLogs(entries: any[]): Promise<void> {
+    try {
+        const result = await chrome.storage.local.get(SYSTEM_LOGS_STORAGE_KEY);
+        let logs: any[] = result[SYSTEM_LOGS_STORAGE_KEY] || [];
+
+        // Add new entries
+        logs.push(...entries);
+
+        // Trim to max size (keep most recent)
+        if (logs.length > MAX_SYSTEM_LOGS) {
+            logs = logs
+                .sort((a, b) => b.timestamp - a.timestamp)
+                .slice(0, MAX_SYSTEM_LOGS);
+        }
+
+        await chrome.storage.local.set({ [SYSTEM_LOGS_STORAGE_KEY]: logs });
+    } catch (e) {
+        console.error('[Kriacy] Error appending system logs:', e);
+    }
+}
+
+async function getSystemLogs(): Promise<any[]> {
+    try {
+        const result = await chrome.storage.local.get(SYSTEM_LOGS_STORAGE_KEY);
+        return result[SYSTEM_LOGS_STORAGE_KEY] || [];
+    } catch (e) {
+        console.error('[Kriacy] Error getting system logs:', e);
+        return [];
+    }
+}
+
+async function clearSystemLogs(): Promise<void> {
+    try {
+        await chrome.storage.local.remove(SYSTEM_LOGS_STORAGE_KEY);
+    } catch (e) {
+        console.error('[Kriacy] Error clearing system logs:', e);
+    }
+}
+
+// Service worker logger - logs directly to storage since SW can't use message passing to itself
+type SwLogLevel = 'debug' | 'info' | 'warn' | 'error';
+function swLog(level: SwLogLevel, message: string, context?: Record<string, unknown>): void {
+    const entry = {
+        id: `sw-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
+        timestamp: Date.now(),
+        level,
+        category: 'worker',
+        module: 'ServiceWorker',
+        message,
+        details: context ? JSON.stringify(context) : undefined,
+        context
+    };
+
+    // Fire and forget - don't await to avoid blocking
+    appendSystemLogs([entry]).catch(() => { });
+}
+
+// Log service worker initialization
+swLog('info', 'Service worker initialized');
 
 /**
  * Validate and sanitize settings to prevent crashes or bypasses from malformed input
@@ -165,13 +230,13 @@ async function updateCSPBypassRules(settings: SpoofSettings): Promise<void> {
             await chrome.declarativeNetRequest.updateEnabledRulesets({
                 enableRulesetIds: [CSP_BYPASS_RULESET_ID]
             });
-            console.log('[Kriacy] CSP bypass enabled');
+            swLog('info', 'CSP bypass enabled');
         } else if (!shouldBeEnabled && isCurrentlyEnabled) {
             // Disable CSP bypass  
             await chrome.declarativeNetRequest.updateEnabledRulesets({
                 disableRulesetIds: [CSP_BYPASS_RULESET_ID]
             });
-            console.log('[Kriacy] CSP bypass disabled');
+            swLog('info', 'CSP bypass disabled');
         }
     } catch (error) {
         console.error('[Kriacy] Error updating CSP bypass rules:', error);
@@ -191,13 +256,16 @@ async function updateSecChRules(settings: SpoofSettings): Promise<void> {
             } catch {
                 // Rule might not exist, that's fine
             }
-            console.log('[Kriacy] SEC-CH rules disabled');
+            swLog('debug', 'SEC-CH rules disabled');
             return;
         }
 
         const dpr = settings.screen?.pixelRatio?.toString() || '1';
         const viewportWidth = settings.screen?.width?.toString() || '1920';
-        const viewportHeight = settings.screen?.height?.toString() || '1080';
+        // SEC-CH-Viewport-Height should match window.innerHeight, which is screen height minus browser chrome
+        const BROWSER_CHROME_HEIGHT = 80;
+        const screenHeight = settings.screen?.height || 1080;
+        const viewportHeight = (screenHeight - BROWSER_CHROME_HEIGHT).toString();
         const deviceMemory = settings.navigator?.deviceMemory?.toString() || '8';
 
         const rule: chrome.declarativeNetRequest.Rule = {
@@ -267,7 +335,7 @@ async function updateSecChRules(settings: SpoofSettings): Promise<void> {
             addRules: [rule]
         });
 
-        console.log('[Kriacy] SEC-CH rules updated: DPR=' + dpr);
+        swLog('debug', 'SEC-CH rules updated', { dpr });
     } catch (error) {
         console.error('[Kriacy] Error updating SEC-CH rules:', error);
     }
@@ -275,13 +343,13 @@ async function updateSecChRules(settings: SpoofSettings): Promise<void> {
 
 // Handle extension installation
 chrome.runtime.onInstalled.addListener(async (details) => {
-    console.log('[Kriacy] Extension installed:', details.reason);
+    swLog('info', 'Extension installed', { reason: details.reason });
 
     if (details.reason === 'install') {
         // First time installation - initialize default settings
         const settings = await getSettings();
         await saveSettings(settings);
-        console.log('[Kriacy] Default settings initialized');
+        swLog('info', 'Default settings initialized');
     }
 
     // Update badge and SEC-CH rules on install
@@ -347,7 +415,7 @@ async function handleMessage(
 
             case 'LOG_SPOOF_ACCESS': {
                 const entries = message.payload as any[];
-                console.log('[Kriacy] Service worker received logs:', entries?.length);
+                swLog('debug', 'Received spoof logs', { count: entries?.length });
                 if (entries && entries.length > 0) {
                     await appendLogs(entries);
                 }
@@ -361,6 +429,24 @@ async function handleMessage(
 
             case 'CLEAR_LOGS': {
                 await clearLogs();
+                return { success: true };
+            }
+
+            case 'LOG_SYSTEM_ENTRIES': {
+                const entries = message.payload as any[];
+                if (entries && entries.length > 0) {
+                    await appendSystemLogs(entries);
+                }
+                return { success: true };
+            }
+
+            case 'GET_SYSTEM_LOGS': {
+                const logs = await getSystemLogs();
+                return { success: true, data: logs };
+            }
+
+            case 'CLEAR_SYSTEM_LOGS': {
+                await clearSystemLogs();
                 return { success: true };
             }
 
@@ -433,7 +519,7 @@ async function handleMessage(
                 await updateSecChRules(settings);
                 await updateCSPBypassRules(settings);
 
-                console.log('[Kriacy] All settings randomized with coherent profile:', {
+                swLog('info', 'All settings randomized with coherent profile', {
                     platform: coherentProfile.platform,
                     gpu: coherentProfile.gpuRenderer.substring(0, 50) + '...',
                     timezone: coherentProfile.timezone,
@@ -452,7 +538,7 @@ async function handleMessage(
                 await updateBadge(defaultSettings.enabled);
                 await updateSecChRules(defaultSettings);
                 await updateCSPBypassRules(defaultSettings);
-                console.log('[Kriacy] Settings reset to defaults');
+                swLog('info', 'Settings reset to defaults');
                 return { success: true, data: defaultSettings };
             }
 

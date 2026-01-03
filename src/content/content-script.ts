@@ -52,8 +52,6 @@
     // This is faster and more reliable than script element injection
     // The content-script now only handles message passing with the background script
 
-    console.log('[Kriacy] Content script initializing...');
-
     // Listen for settings updates from background
     // Only add listener if context is valid
     if (isExtensionContextValid()) {
@@ -72,7 +70,6 @@
                         if (payload.fingerprintSeed) {
                             localStorage.setItem('__kriacy_fp_seed__', payload.fingerprintSeed.toString());
                         }
-                        console.log('[Kriacy] Stored settings in localStorage');
                     }
                     // Clear sessionStorage to force refresh
                     sessionStorage.removeItem('__kriacy_seed__');
@@ -98,12 +95,23 @@
         // Source check - reject messages from iframes
         if (e.source !== window) return;
 
-        // Only handle our messages
+        // Handle spoof log entries
         if (e.data && e.data.type === 'KRIACY_LOG_ENTRIES') {
             const entries = e.data.entries;
             if (entries && entries.length > 0) {
                 safeSendMessage({
                     action: 'LOG_SPOOF_ACCESS',
+                    payload: entries
+                });
+            }
+        }
+
+        // Handle system log entries
+        if (e.data && e.data.type === 'KRIACY_SYSTEM_LOG_ENTRIES') {
+            const entries = e.data.entries;
+            if (entries && entries.length > 0) {
+                safeSendMessage({
+                    action: 'LOG_SYSTEM_ENTRIES',
                     payload: entries
                 });
             }

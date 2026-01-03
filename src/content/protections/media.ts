@@ -2,11 +2,15 @@
 
 import { settings, getFingerprintSeed } from '../core/state';
 import { mulberry32, hashString } from '../core/utils';
+import { createLogger } from '../../utils/system-logger';
+
+const log = createLogger('Media');
 
 /**
  * Initialize speech voices spoofing
  */
 export function initSpeechVoicesSpoofing(): void {
+    log.init('Initializing speech voices spoofing');
     if ('speechSynthesis' in window) {
         const originalGetVoices = speechSynthesis.getVoices.bind(speechSynthesis);
 
@@ -41,6 +45,7 @@ function generateDeviceId(seed: number, index: number): string {
  * Initialize media devices spoofing
  */
 export function initMediaDevicesSpoofing(): void {
+    log.init('Initializing media devices spoofing');
     if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
         const originalEnumerateDevices = navigator.mediaDevices.enumerateDevices.bind(navigator.mediaDevices);
 
@@ -63,6 +68,8 @@ export function initMediaDevicesSpoofing(): void {
  * Initialize codec support spoofing
  */
 export function initCodecSupportSpoofing(): void {
+    log.init('Initializing codec support spoofing');
+
     // Override MediaSource.isTypeSupported
     if (typeof MediaSource !== 'undefined' && MediaSource.isTypeSupported) {
         const originalIsTypeSupported = MediaSource.isTypeSupported.bind(MediaSource);
@@ -110,6 +117,7 @@ export function initCodecSupportSpoofing(): void {
  * and provide consistent fingerprinting behavior.
  */
 export function initDRMSpoofing(): void {
+    log.init('Initializing DRM (EME) spoofing');
     if (navigator.requestMediaKeySystemAccess) {
         const originalRequestMediaKeySystemAccess = navigator.requestMediaKeySystemAccess.bind(navigator);
 

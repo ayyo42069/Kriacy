@@ -2,6 +2,9 @@
 
 import { settings, getFingerprintSeed, AUDIO_NOISE } from '../core/state';
 import { mulberry32 } from '../core/utils';
+import { createLogger } from '../../utils/system-logger';
+
+const log = createLogger('Audio');
 
 /**
  * Initialize audio fingerprint protection
@@ -11,6 +14,7 @@ export function initAudioProtection(): void {
     const OriginalOfflineAudioContext = window.OfflineAudioContext || (window as any).webkitOfflineAudioContext;
 
     if (OriginalAudioContext) {
+        log.init('Initializing audio fingerprint protection');
         const originalCreateAnalyser = OriginalAudioContext.prototype.createAnalyser;
         const originalCreateOscillator = OriginalAudioContext.prototype.createOscillator;
         const originalCreateDynamicsCompressor = OriginalAudioContext.prototype.createDynamicsCompressor;

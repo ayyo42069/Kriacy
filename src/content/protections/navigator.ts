@@ -3,6 +3,9 @@
 import { settings, getFingerprintSeed } from '../core/state';
 import { mulberry32 } from '../core/utils';
 import { logSpoofAccess } from '../../utils/logger';
+import { createLogger } from '../../utils/system-logger';
+
+const log = createLogger('Navigator');
 
 // Capture original navigator values at load time to avoid illegal invocation
 const originalNavigatorValues: Record<string, any> = {};
@@ -38,6 +41,7 @@ const navigatorDefaults: Record<string, any> = {
  * Initialize navigator spoofing
  */
 export function initNavigatorSpoofing(): void {
+    log.init('Initializing navigator spoofing');
     const navigatorPropsToSpoof = {
         hardwareConcurrency: () => settings.navigator?.hardwareConcurrency || 4,
         deviceMemory: () => settings.navigator?.deviceMemory || 8,
@@ -83,6 +87,7 @@ try {
  * Initialize UserAgentData spoofing
  */
 export function initUserAgentDataSpoofing(): void {
+    log.init('Initializing UserAgentData spoofing');
     if ('userAgentData' in navigator) {
         const uaRandom = mulberry32(getFingerprintSeed() ^ 0xABCDEF);
         const majorVersion = 120 + Math.floor(uaRandom() * 10); // 120-129

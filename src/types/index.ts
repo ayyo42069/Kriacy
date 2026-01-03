@@ -148,6 +148,9 @@ export type MessageAction =
     | 'LOG_SPOOF_ACCESS'
     | 'GET_LOGS'
     | 'CLEAR_LOGS'
+    | 'LOG_SYSTEM_ENTRIES'
+    | 'GET_SYSTEM_LOGS'
+    | 'CLEAR_SYSTEM_LOGS'
     | 'RANDOMIZE_ALL'
     | 'RESET_SETTINGS';
 

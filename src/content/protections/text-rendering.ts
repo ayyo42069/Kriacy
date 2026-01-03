@@ -5,6 +5,9 @@
 import { settings, getFingerprintSeed } from '../core/state';
 import { mulberry32, hashString } from '../core/utils';
 import { logSpoofAccess } from '../../utils/logger';
+import { createLogger } from '../../utils/system-logger';
+
+const log = createLogger('TextRender');
 
 // Store original methods
 const w = window as any;
@@ -30,8 +33,6 @@ function createNoisedMetrics(metrics: TextMetrics, text: string, font: string): 
 
     // More aggressive noise: ±2.0 pixels base
     const baseNoise = (noiseRandom() - 0.5) * 4.0;
-
-    console.log('[Kriacy DEBUG] measureText noise applied:', baseNoise.toFixed(4), 'for text:', text.substring(0, 20));
 
     // Create a proxy that returns noised values
     return new Proxy(metrics, {
@@ -70,12 +71,12 @@ function overrideMeasureText(): void {
  */
 function overrideOffscreenMeasureText(): void {
     if (typeof OffscreenCanvasRenderingContext2D === 'undefined') {
-        console.log('[Kriacy] OffscreenCanvasRenderingContext2D not available, skipping');
+        log.debug('OffscreenCanvasRenderingContext2D not available, skipping');
         return;
     }
 
     if (!originals.offscreenMeasureText) {
-        console.log('[Kriacy] OffscreenCanvas measureText original not captured, skipping');
+        log.debug('OffscreenCanvas measureText original not captured, skipping');
         return;
     }
 
@@ -161,7 +162,7 @@ function patchOffscreenGetContext(): void {
  * Initialize text and emoji rendering protection
  */
 export function initTextRenderingProtection(): void {
-    console.log('[Kriacy] Initializing Text/Emoji rendering fingerprint protection');
+    log.init('Initializing Text/Emoji rendering fingerprint protection');
 
     overrideMeasureText();
     overrideOffscreenMeasureText();

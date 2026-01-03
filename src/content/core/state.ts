@@ -2,6 +2,9 @@
 
 import { KriacySettings } from './types';
 import { hashString, mulberry32 } from './utils';
+import { createLogger } from '../../utils/system-logger';
+
+const log = createLogger('State');
 
 // Domain seed for per-domain uniqueness
 const DOMAIN_SEED = hashString(window.location.hostname);
@@ -14,7 +17,7 @@ try {
     const storedSeed = localStorage.getItem('__kriacy_fp_seed__');
     if (storedSeed) {
         fallbackSeed = parseInt(storedSeed, 10);
-        console.log('[Kriacy] Using stored seed from localStorage:', fallbackSeed.toString(16));
+        log.settings('Using stored seed from localStorage', { seed: fallbackSeed.toString(16) });
     } else {
         // Fallback to sessionStorage for backwards compatibility
         const sessionSeed = sessionStorage.getItem('__kriacy_seed__');
@@ -81,7 +84,7 @@ function loadInitialSettings(): KriacySettings {
     // First, check if service worker injected settings (most reliable for persistence)
     const injectedSettings = (window as any).__KRIACY_SETTINGS__;
     if (injectedSettings) {
-        console.log('[Kriacy] Using injected settings from service worker');
+        log.settings('Using injected settings from service worker');
         return { ...DEFAULT_SETTINGS, ...injectedSettings };
     }
 
@@ -90,7 +93,7 @@ function loadInitialSettings(): KriacySettings {
         const storedSettings = localStorage.getItem('__kriacy_settings__');
         if (storedSettings) {
             const parsed = JSON.parse(storedSettings);
-            console.log('[Kriacy] Using settings from localStorage');
+            log.settings('Using settings from localStorage');
             return { ...DEFAULT_SETTINGS, ...parsed };
         }
     } catch (e) {
@@ -104,7 +107,7 @@ function loadInitialSettings(): KriacySettings {
         if (storedSeed) {
             const seed = parseInt(storedSeed, 10);
             if (!isNaN(seed)) {
-                console.log('[Kriacy] Using default settings with stored seed');
+                log.settings('Using default settings with stored seed', { seed: seed.toString(16) });
                 return { ...DEFAULT_SETTINGS, fingerprintSeed: seed };
             }
         }
@@ -113,7 +116,7 @@ function loadInitialSettings(): KriacySettings {
     }
 
     // Finally, use defaults
-    console.log('[Kriacy] Using default settings');
+    log.settings('Using default settings');
     return DEFAULT_SETTINGS;
 }
 
@@ -155,7 +158,7 @@ export function recalculateNoiseValues(): void {
         sessionStorage.setItem('__kriacy_seed__', seed.toString());
     } catch (e) { }
 
-    console.log('[Kriacy] Fingerprint seed updated:', seed.toString(16));
+    log.settings('Fingerprint seed updated', { seed: seed.toString(16) });
 }
 
 /**
@@ -173,13 +176,13 @@ export function updateSettings(newSettings: Partial<KriacySettings>): void {
  * Initialize settings listeners
  */
 export function initSettingsListeners(): void {
-    console.log('[Kriacy] Initializing with seed:', getFingerprintSeed().toString(16));
+    log.init('Initializing settings listeners', { seed: getFingerprintSeed().toString(16) });
 
     // Listen for settings updates
     window.addEventListener('kriacy-init', (e: any) => {
         if (e.detail) {
             updateSettings(e.detail);
-            console.log('[Kriacy] Settings loaded, seed:', getFingerprintSeed().toString(16));
+            log.settings('Settings loaded', { seed: getFingerprintSeed().toString(16) });
         }
     });
 
@@ -188,9 +191,9 @@ export function initSettingsListeners(): void {
             const oldSeed = settings.fingerprintSeed;
             updateSettings(e.detail);
             if (e.detail.fingerprintSeed && e.detail.fingerprintSeed !== oldSeed) {
-                console.log('[Kriacy] IMPORTANT: Fingerprint seed changed. Reload page for full effect.');
+                log.warn('Fingerprint seed changed - reload page for full effect');
             }
-            console.log('[Kriacy] Settings updated');
+            log.settings('Settings updated');
         }
     });
 }

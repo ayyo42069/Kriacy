@@ -1,6 +1,9 @@
 // Screen and window dimension spoofing
 
 import { settings } from '../core/state';
+import { createLogger } from '../../utils/system-logger';
+
+const log = createLogger('Screen');
 
 // Capture original screen values BEFORE any overrides
 // Use Object.getOwnPropertyDescriptor to get the native getters from the prototype
@@ -125,6 +128,50 @@ export function initScreenSpoofing(): void {
             configurable: true
         });
     } catch { }
+
+    // Spoof screen.orientation to match spoofed dimensions
+    try {
+        const originalOrientation = screen.orientation;
+        const getSpoofedOrientationType = (): OrientationType => {
+            if (!settings.screen?.enabled) {
+                return originalOrientation?.type || 'landscape-primary';
+            }
+            const width = settings.screen.width || 1920;
+            const height = settings.screen.height || 1080;
+            return width > height ? 'landscape-primary' : 'portrait-primary';
+        };
+        const getSpoofedOrientationAngle = (): number => {
+            if (!settings.screen?.enabled) {
+                return originalOrientation?.angle || 0;
+            }
+            const width = settings.screen.width || 1920;
+            const height = settings.screen.height || 1080;
+            return width > height ? 0 : 90;
+        };
+
+        // Create a spoofed ScreenOrientation object
+        const orientationAny = originalOrientation as any;
+        const spoofedOrientation = {
+            get type() { return getSpoofedOrientationType(); },
+            get angle() { return getSpoofedOrientationAngle(); },
+            onchange: originalOrientation?.onchange || null,
+            lock: orientationAny?.lock?.bind(originalOrientation) || (() => Promise.reject(new Error('Not supported'))),
+            unlock: orientationAny?.unlock?.bind(originalOrientation) || (() => { }),
+            addEventListener: originalOrientation?.addEventListener?.bind(originalOrientation) || (() => { }),
+            removeEventListener: originalOrientation?.removeEventListener?.bind(originalOrientation) || (() => { }),
+            dispatchEvent: originalOrientation?.dispatchEvent?.bind(originalOrientation) || (() => true),
+        };
+
+        Object.defineProperty(screen, 'orientation', {
+            get: function () {
+                return spoofedOrientation;
+            },
+            configurable: true
+        });
+        log.init('Orientation spoofing initialized');
+    } catch (e) {
+        log.error('Failed to spoof orientation', { error: String(e) });
+    }
 }
 
 // Approximate height of browser chrome (toolbar, tabs, etc.)
