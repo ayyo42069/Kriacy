@@ -14,6 +14,7 @@ export { initBatterySpoofing, initNetworkSpoofing, initPluginsSpoofing } from '.
 export { initFontProtection } from './fonts';
 export { initCSSProtection } from './css';
 export { initAllMiscProtections } from './misc';
+export { initAdBlockerProtection } from './adblocker';
 export { initWebGLCanvasProtection } from './webgl-canvas';
 export { initTextRenderingProtection } from './text-rendering';
 export { initStealthProtections, finalizeWebGLStealth, makeNative, patchMethod, patchGetter } from './stealth';

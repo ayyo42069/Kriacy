@@ -73,7 +73,8 @@ const DEFAULT_SETTINGS: KriacySettings = {
         credentials: true,
         errorStack: true,
         storage: true,
-        blockServiceWorkers: false // Off by default to avoid breaking sites
+        blockServiceWorkers: false, // Off by default to avoid breaking sites
+        hideAdBlocker: true         // On by default to hide ad blockers
     }
 };
 

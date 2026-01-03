@@ -26,6 +26,7 @@ import { initCSSProtection } from './protections/css';
 import { initAllMiscProtections } from './protections/misc';
 import { initWebGLCanvasProtection } from './protections/webgl-canvas';
 import { initTextRenderingProtection } from './protections/text-rendering';
+import { initAdBlockerProtection } from './protections/adblocker';
 import { createLogger } from '../utils/system-logger';
 
 const log = createLogger('MainWorld');
@@ -58,7 +59,13 @@ const log = createLogger('MainWorld');
     initStealthProtections();
 
     // ============================================
-    // Initialize Worker Protection SECOND
+    // Initialize Ad Blocker Protection VERY EARLY
+    // This must run before detection scripts can check for ad blockers
+    // ============================================
+    initAdBlockerProtection();
+
+    // ============================================
+    // Initialize Worker Protection
     // This intercepts Blob/Worker creation to inject consistent fingerprinting
     // Must be done before any page scripts can create Workers
     // ============================================

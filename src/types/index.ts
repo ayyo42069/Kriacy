@@ -113,6 +113,10 @@ export interface MiscSettings {
     credentials: boolean;
     errorStack: boolean;
     storage: boolean;
+
+    // Advanced Protection
+    blockServiceWorkers?: boolean;  // Block Service Worker registration
+    hideAdBlocker: boolean;         // Hide ad blocker from detection
 }
 
 // Fingerprint profile presets
@@ -262,6 +266,10 @@ export const DEFAULT_SETTINGS: SpoofSettings = {
         clipboard: false,     // aggressive only
         credentials: false,   // aggressive only
         errorStack: true,
-        storage: false        // aggressive only
+        storage: false,       // aggressive only
+
+        // Advanced Protection
+        blockServiceWorkers: false,
+        hideAdBlocker: true   // Enabled by default to hide uBlock, AdBlock, etc.
     }
 };

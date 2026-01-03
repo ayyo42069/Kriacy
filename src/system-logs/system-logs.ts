@@ -48,6 +48,8 @@ const elements = {
     modalBody: document.getElementById('modalBody') as HTMLDivElement,
     closeModal: document.getElementById('closeModal') as HTMLButtonElement,
 
+    showDebugToggle: document.getElementById('showDebugToggle') as HTMLInputElement,
+
     toast: document.getElementById('toast') as HTMLDivElement,
     toastMessage: document.getElementById('toastMessage') as HTMLSpanElement,
 };
@@ -58,6 +60,7 @@ let lastLogHash = '';
 let isPaused = false;
 let refreshInterval: number | null = null;
 let currentPage = 1;
+let showDebug = false; // Debug logs hidden by default
 
 /**
  * Generate a hash of logs to detect changes
@@ -163,6 +166,11 @@ function getFilteredLogs(): SystemLogEntry[] {
     const searchValue = elements.searchInput.value.toLowerCase().trim();
 
     return allLogs.filter(log => {
+        // Hide debug logs unless toggle is enabled
+        if (!showDebug && log.level === 'debug') {
+            return false;
+        }
+
         if (levelValue !== 'all' && log.level !== levelValue) {
             return false;
         }
@@ -489,6 +497,12 @@ async function init(): Promise<void> {
 
     elements.levelFilter.addEventListener('change', handleFilter);
     elements.categoryFilter.addEventListener('change', handleFilter);
+
+    // Debug toggle
+    elements.showDebugToggle.addEventListener('change', () => {
+        showDebug = elements.showDebugToggle.checked;
+        handleFilter();
+    });
 
     elements.searchInput.addEventListener('input', () => {
         if (elements.searchInput.value) {

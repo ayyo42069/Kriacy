@@ -77,6 +77,7 @@ export interface MiscSettings {
     errorStack: boolean;
     storage: boolean;
     blockServiceWorkers: boolean;
+    hideAdBlocker: boolean;  // Hide ad blocker from detection
 }
 
 export interface KriacySettings {

@@ -57,7 +57,46 @@ interface SpoofSettings {
         errorStack: boolean;
         storage: boolean;
         blockServiceWorkers: boolean;
+        hideAdBlocker: boolean;
     };
+}
+
+// ============================================
+// Security Utilities
+// ============================================
+
+/**
+ * Generate a cryptographically secure random number between 0 and 1
+ * Used instead of Math.random() for security-sensitive operations
+ */
+function secureRandom(): number {
+    const array = new Uint32Array(1);
+    crypto.getRandomValues(array);
+    return array[0] / 0xFFFFFFFF;
+}
+
+/**
+ * Generate a cryptographically secure random integer
+ * @param max Maximum value (exclusive)
+ */
+function secureRandomInt(max: number): number {
+    return Math.floor(secureRandom() * max);
+}
+
+/**
+ * Pick a random element from an array using secure randomness
+ */
+function secureRandomPick<T>(array: T[]): T {
+    return array[secureRandomInt(array.length)];
+}
+
+/**
+ * Escape HTML to prevent XSS attacks
+ */
+function escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // ============================================
@@ -275,6 +314,7 @@ const credentialsEnabled = document.getElementById('credentialsEnabled') as HTML
 const errorStackEnabled = document.getElementById('errorStackEnabled') as HTMLInputElement;
 const storageEnabled = document.getElementById('storageEnabled') as HTMLInputElement;
 const blockServiceWorkersEnabled = document.getElementById('blockServiceWorkersEnabled') as HTMLInputElement;
+const hideAdBlockerEnabled = document.getElementById('hideAdBlockerEnabled') as HTMLInputElement;
 
 // ============================================
 // Toast Notification
@@ -514,17 +554,17 @@ function updateCoherenceBanner(): void {
     // Update warnings list
     if (coherenceWarningsList) {
         const warningsHtml = warnings.map(w => `
-            <div class="coherence-warning-item severity-${w.severity}">
+            <div class="coherence-warning-item severity-${escapeHtml(w.severity)}">
                 <div class="warning-header">
                     <span class="warning-severity">
                         <img src="icons/toolbar/${w.severity === 'error' ? 'error' : 'warning'}.svg" width="16" height="16" alt="">
                     </span>
-                    <span class="warning-title">${w.title}</span>
+                    <span class="warning-title">${escapeHtml(w.title)}</span>
                 </div>
-                <div class="warning-message">${w.message}</div>
-                ${w.suggestion ? `<div class="warning-suggestion">${w.suggestion}</div>` : ''}
+                <div class="warning-message">${escapeHtml(w.message)}</div>
+                ${w.suggestion ? `<div class="warning-suggestion">${escapeHtml(w.suggestion)}</div>` : ''}
                 <div class="warning-fields">
-                    ${w.affectedFields.map(f => `<span class="field-tag">${f}</span>`).join('')}
+                    ${w.affectedFields.map(f => `<span class="field-tag">${escapeHtml(f)}</span>`).join('')}
                 </div>
             </div>
         `).join('');
@@ -642,6 +682,7 @@ function updateUI(): void {
     if (errorStackEnabled) errorStackEnabled.checked = currentSettings.misc?.errorStack ?? true;
     if (storageEnabled) storageEnabled.checked = currentSettings.misc?.storage ?? true;
     if (blockServiceWorkersEnabled) blockServiceWorkersEnabled.checked = currentSettings.misc?.blockServiceWorkers ?? false;
+    if (hideAdBlockerEnabled) hideAdBlockerEnabled.checked = currentSettings.misc?.hideAdBlocker ?? true;
 
     // Update profile coherence warnings
     updateCoherenceBanner();
@@ -856,8 +897,8 @@ async function applyRandomAll() {
     currentSettings.geolocation = {
         ...currentSettings.geolocation,
         mode: 'spoof',
-        latitude: baseLocation.lat + (Math.random() - 0.5) * 0.1,
-        longitude: baseLocation.lng + (Math.random() - 0.5) * 0.1
+        latitude: baseLocation.lat + (secureRandom() - 0.5) * 0.1,
+        longitude: baseLocation.lng + (secureRandom() - 0.5) * 0.1
     };
 
     updateUI();
@@ -1320,7 +1361,7 @@ function ensureMisc() {
             dnt: true, gpc: true, visibility: true, windowName: true,
             keyboard: true, pointer: true, mediaQuery: true,
             clipboard: true, credentials: true, errorStack: true, storage: true,
-            blockServiceWorkers: false
+            blockServiceWorkers: false, hideAdBlocker: true
         };
     }
     return true;
@@ -1442,6 +1483,12 @@ storageEnabled?.addEventListener('change', async () => {
 blockServiceWorkersEnabled?.addEventListener('change', async () => {
     if (!ensureMisc()) return;
     currentSettings!.misc.blockServiceWorkers = blockServiceWorkersEnabled.checked;
+    await saveSettings();
+});
+
+hideAdBlockerEnabled?.addEventListener('change', async () => {
+    if (!ensureMisc()) return;
+    currentSettings!.misc.hideAdBlocker = hideAdBlockerEnabled.checked;
     await saveSettings();
 });
 

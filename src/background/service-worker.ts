@@ -456,8 +456,10 @@ async function handleMessage(
 
                 const settings = await getSettings();
 
-                // Generate new fingerprint seed
-                settings.fingerprintSeed = (Date.now() ^ (Math.random() * 0xFFFFFFFF)) >>> 0;
+                // Generate new fingerprint seed using crypto for security
+                const seedArray = new Uint32Array(1);
+                crypto.getRandomValues(seedArray);
+                settings.fingerprintSeed = (Date.now() ^ seedArray[0]) >>> 0;
 
                 // Generate a fully coherent profile - all values are guaranteed to be logically consistent
                 // (e.g., Apple GPU only with Mac platform, proper hardware tiers, matching screen configs, etc.)
@@ -472,8 +474,10 @@ async function handleMessage(
                 settings.screen = { ...settings.screen, ...profileSettings.screen };
                 settings.timezone = { ...settings.timezone, ...profileSettings.timezone };
 
-                // Randomize canvas noise level
-                settings.canvas = { ...settings.canvas, noiseLevel: Math.floor(Math.random() * 20) + 5 };
+                // Randomize canvas noise level using crypto
+                const noiseArray = new Uint32Array(1);
+                crypto.getRandomValues(noiseArray);
+                settings.canvas = { ...settings.canvas, noiseLevel: (noiseArray[0] % 20) + 5 };
 
                 // Set geolocation to a coherent location based on timezone
                 const timezoneLocations: Record<string, { lat: number; lng: number }> = {
@@ -507,11 +511,14 @@ async function handleMessage(
                 };
 
                 const baseLocation = timezoneLocations[coherentProfile.timezone] || { lat: 40.7128, lng: -74.006 };
+                // Use crypto for secure random offsets
+                const geoOffset = new Uint32Array(2);
+                crypto.getRandomValues(geoOffset);
                 settings.geolocation = {
                     ...settings.geolocation,
                     mode: 'spoof',
-                    latitude: baseLocation.lat + (Math.random() - 0.5) * 0.1,
-                    longitude: baseLocation.lng + (Math.random() - 0.5) * 0.1
+                    latitude: baseLocation.lat + ((geoOffset[0] / 0xFFFFFFFF) - 0.5) * 0.1,
+                    longitude: baseLocation.lng + ((geoOffset[1] / 0xFFFFFFFF) - 0.5) * 0.1
                 };
 
                 await saveSettings(settings);
@@ -531,8 +538,10 @@ async function handleMessage(
 
             case 'RESET_SETTINGS': {
                 const defaultSettings = { ...DEFAULT_SETTINGS };
-                // Generate a fresh fingerprint seed for the reset
-                defaultSettings.fingerprintSeed = (Date.now() ^ (Math.random() * 0xFFFFFFFF)) >>> 0;
+                // Generate a fresh fingerprint seed for the reset using crypto
+                const resetSeedArray = new Uint32Array(1);
+                crypto.getRandomValues(resetSeedArray);
+                defaultSettings.fingerprintSeed = (Date.now() ^ resetSeedArray[0]) >>> 0;
                 await saveSettings(defaultSettings);
                 await notifyAllTabs(defaultSettings);
                 await updateBadge(defaultSettings.enabled);
