@@ -162,7 +162,8 @@
                                 identity.</p>
                         </div>
                     </div>
-                </div>
+
+
             </section>
 
             <!-- WebRTC Section -->
@@ -929,6 +930,31 @@
                 </div>
             </section>
         </main>
+    </div>
+
+    <!-- Profile Coherence Warning Bubble (Fixed Position) -->
+    <div id="coherenceBanner" class="coherence-banner hidden">
+        <div class="coherence-bubble-icon" id="coherenceBubbleIcon">
+            <img src="icons/toolbar/warning.svg" alt="" width="28" height="28" id="coherenceBubbleImg">
+        </div>
+        <div class="coherence-header" id="coherenceHeader">
+            <img src="icons/toolbar/warning.svg" alt="" width="24" height="24" class="coherence-icon"
+                id="coherenceIconImg">
+            <div class="coherence-summary">
+                <div class="coherence-title">
+                    <span id="coherenceTitle">Profile Issues</span>
+                    <div class="coherence-badges" id="coherenceBadges"></div>
+                </div>
+                <div class="coherence-subtitle" id="coherenceSubtitle">
+                    Click to view details
+                </div>
+            </div>
+            <span class="coherence-close" id="coherenceClose">×</span>
+        </div>
+        <div class="coherence-details">
+            <div class="coherence-warnings-list" id="coherenceWarningsList">
+            </div>
+        </div>
     </div>
 
     <script src="options.js" type="module"></script>

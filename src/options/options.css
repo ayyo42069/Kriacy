@@ -737,6 +737,7 @@ input:checked+.slider:before {
     background: var(--accent-glow);
     color: var(--text-primary);
 }
+
 /* Toolbar Icon Styles */
 .nav-icon {
     display: flex;
@@ -776,4 +777,279 @@ input:checked+.slider:before {
 .btn-randomize-all img {
     vertical-align: middle;
     margin-right: 4px;
+}
+
+/* ============================================
+   Profile Coherence Warning System - Floating Bubble
+   ============================================ */
+
+.coherence-banner {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transform-origin: top right;
+}
+
+.coherence-banner.hidden {
+    display: none;
+}
+
+/* Collapsed state - just the icon, no circle */
+.coherence-banner:not(.expanded) {
+    width: 56px;
+    height: 56px;
+    overflow: hidden;
+    background: transparent;
+}
+
+.coherence-banner:not(.expanded):hover {
+    transform: scale(1.1);
+}
+
+/* Expanded state */
+.coherence-banner.expanded {
+    width: 400px;
+    background: var(--bg-card);
+    border: 2px solid var(--warning);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    cursor: default;
+    animation: expandBanner 0.2s ease-out forwards;
+}
+
+@keyframes expandBanner {
+    from {
+        opacity: 0.9;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.coherence-banner.expanded.status-warning {
+    border-color: var(--warning);
+}
+
+.coherence-banner.expanded.status-error {
+    border-color: var(--danger);
+}
+
+/* Bubble icon - centered */
+.coherence-bubble-icon {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+}
+
+.coherence-banner.expanded .coherence-bubble-icon {
+    display: none;
+}
+
+.coherence-bubble-icon img {
+    display: block;
+    margin: auto;
+}
+
+/* Header */
+.coherence-header {
+    padding: 14px 16px;
+    display: none;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.coherence-banner.expanded .coherence-header {
+    display: flex;
+}
+
+.coherence-header:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.coherence-icon {
+    flex-shrink: 0;
+}
+
+.coherence-summary {
+    flex: 1;
+    min-width: 0;
+}
+
+.coherence-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.status-warning .coherence-title {
+    color: var(--warning);
+}
+
+.status-error .coherence-title {
+    color: var(--danger);
+}
+
+.coherence-subtitle {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.coherence-close {
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--text-muted);
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.coherence-close:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+}
+
+.coherence-badges {
+    display: flex;
+    gap: 5px;
+}
+
+.coherence-badge {
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    text-transform: uppercase;
+}
+
+.coherence-badge.errors {
+    background: rgba(205, 139, 139, 0.2);
+    color: var(--danger);
+}
+
+.coherence-badge.warnings {
+    background: rgba(218, 160, 109, 0.2);
+    color: var(--warning);
+}
+
+/* Details panel */
+.coherence-details {
+    display: none;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.coherence-banner.expanded .coherence-details {
+    display: block;
+}
+
+.coherence-warnings-list {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.coherence-warning-item {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    border-left: 3px solid var(--warning);
+}
+
+.coherence-warning-item.severity-error {
+    border-left-color: var(--danger);
+}
+
+.warning-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+}
+
+.warning-severity {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.warning-severity img {
+    width: 16px;
+    height: 16px;
+}
+
+.warning-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.warning-message {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 6px;
+}
+
+.warning-suggestion {
+    font-size: 10px;
+    color: var(--accent-primary);
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+}
+
+.warning-suggestion::before {
+    content: "";
+    font-size: 10px;
+}
+
+.warning-fields {
+    font-size: 9px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.field-tag {
+    background: var(--bg-tertiary);
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-family: monospace;
+}
+
+.coherence-details::-webkit-scrollbar {
+    width: 5px;
+}
+
+.coherence-details::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
 }

@@ -285,6 +285,238 @@ function showToast(message: string) {
 }
 
 // ============================================
+// Profile Coherence Validation
+// ============================================
+
+interface CoherenceWarning {
+    id: string;
+    severity: 'warning' | 'error';
+    title: string;
+    message: string;
+    affectedFields: string[];
+    suggestion?: string;
+}
+
+// DOM elements for coherence banner
+const coherenceBanner = document.getElementById('coherenceBanner');
+const coherenceHeader = document.getElementById('coherenceHeader');
+const coherenceBubbleIcon = document.getElementById('coherenceBubbleIcon');
+const coherenceBubbleImg = document.getElementById('coherenceBubbleImg') as HTMLImageElement;
+const coherenceIconImg = document.getElementById('coherenceIconImg') as HTMLImageElement;
+const coherenceTitle = document.getElementById('coherenceTitle');
+const coherenceSubtitle = document.getElementById('coherenceSubtitle');
+const coherenceBadges = document.getElementById('coherenceBadges');
+const coherenceWarningsList = document.getElementById('coherenceWarningsList');
+const coherenceClose = document.getElementById('coherenceClose');
+
+// Click bubble icon to expand
+coherenceBubbleIcon?.addEventListener('click', () => {
+    coherenceBanner?.classList.add('expanded');
+});
+
+// Click close button to collapse
+coherenceClose?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    coherenceBanner?.classList.remove('expanded');
+});
+
+// Click header to collapse (when expanded)
+coherenceHeader?.addEventListener('click', () => {
+    coherenceBanner?.classList.remove('expanded');
+});
+
+/**
+ * Validate current settings for logical consistency
+ */
+function validateProfileCoherence(): CoherenceWarning[] {
+    if (!currentSettings) return [];
+
+    const warnings: CoherenceWarning[] = [];
+    const platform = currentSettings.navigator?.platform || 'Win32';
+    const gpuVendor = currentSettings.webgl?.vendor || '';
+    const gpuRenderer = currentSettings.webgl?.renderer || '';
+    const gpuString = `${gpuVendor} ${gpuRenderer}`;
+    const pixelRatio = currentSettings.screen?.pixelRatio || 1;
+    const screenWidth = currentSettings.screen?.width || 1920;
+    const cores = currentSettings.navigator?.hardwareConcurrency || 4;
+    const memory = currentSettings.navigator?.deviceMemory || 8;
+    const timezone = currentSettings.timezone?.timezone || 'UTC';
+    const language = currentSettings.navigator?.language || 'en-US';
+
+    // Check 1: Apple GPU on non-Mac platform
+    if ((gpuString.includes('Apple M') || gpuString.includes('Apple GPU') || gpuString.includes('Apple,')) && platform !== 'MacIntel') {
+        warnings.push({
+            id: 'gpu-platform-apple',
+            severity: 'error',
+            title: 'Apple GPU on Non-Mac Platform',
+            message: `Apple Silicon (M1/M2/M3) GPUs are exclusive to macOS. Using this GPU with "${platform}" platform is easily detectable.`,
+            affectedFields: ['webglVendor', 'webglRenderer', 'navigatorPlatform'],
+            suggestion: 'Change platform to "MacIntel" or select a different GPU.',
+        });
+    }
+
+    // Check 2: Mesa driver on non-Linux platform
+    if ((gpuString.includes('Mesa') || gpuString.includes('Mesa/X.org')) && !platform.includes('Linux')) {
+        warnings.push({
+            id: 'gpu-platform-mesa',
+            severity: 'error',
+            title: 'Mesa Driver on Non-Linux Platform',
+            message: `Mesa graphics drivers are Linux-specific. Using Mesa with "${platform}" is a clear indicator of spoofing.`,
+            affectedFields: ['webglVendor', 'webglRenderer', 'navigatorPlatform'],
+            suggestion: 'Change platform to a Linux variant or select a different GPU.',
+        });
+    }
+
+    // Check 3: Direct3D on non-Windows platform
+    if ((gpuString.includes('Direct3D') || gpuString.includes('D3D11') || gpuString.includes('D3D12')) && platform !== 'Win32') {
+        warnings.push({
+            id: 'gpu-platform-d3d',
+            severity: 'error',
+            title: 'Direct3D on Non-Windows Platform',
+            message: `Direct3D is a Windows-only graphics API. Using D3D with "${platform}" is impossible in reality.`,
+            affectedFields: ['webglVendor', 'webglRenderer', 'navigatorPlatform'],
+            suggestion: 'Change platform to "Win32" or select a GPU that uses OpenGL.',
+        });
+    }
+
+    // Check 4: Low pixel ratio on Mac (Macs have Retina displays)
+    if (platform === 'MacIntel' && pixelRatio < 2) {
+        warnings.push({
+            id: 'screen-mac-pixelratio',
+            severity: 'warning',
+            title: 'Unusual Pixel Ratio for Mac',
+            message: `Pixel ratio of ${pixelRatio}x is unusual for Mac. Retina displays are typically 2x or higher.`,
+            affectedFields: ['pixelRatio', 'navigatorPlatform'],
+            suggestion: 'Consider using 2x pixel ratio for Mac platform.',
+        });
+    }
+
+    // Check 5: High-end GPU with low system specs
+    const highEndGPUs = ['rtx 4090', 'rtx 4080', 'rtx 3090', 'rtx 3080', 'rx 7900', 'rx 6900'];
+    const hasHighEndGPU = highEndGPUs.some(g => gpuString.toLowerCase().includes(g));
+    if (hasHighEndGPU && (cores <= 4 || memory <= 4)) {
+        warnings.push({
+            id: 'gpu-specs-mismatch',
+            severity: 'warning',
+            title: 'GPU / System Specs Mismatch',
+            message: `A high-end GPU is typically paired with more powerful system specs. ${cores} cores and ${memory}GB RAM is unusual for this GPU.`,
+            affectedFields: ['webglRenderer', 'hardwareConcurrency', 'deviceMemory'],
+            suggestion: 'Consider using higher system specs or a more modest GPU.',
+        });
+    }
+
+    // Check 6: Timezone / Language mismatch
+    const isObviousMismatch =
+        (language.startsWith('en-US') && timezone.startsWith('Asia/')) ||
+        (language.startsWith('ja-JP') && !timezone.startsWith('Asia/')) ||
+        (language.startsWith('zh-CN') && !timezone.startsWith('Asia/')) ||
+        (language.startsWith('de-DE') && !timezone.startsWith('Europe/')) ||
+        (language.startsWith('ru-RU') && !timezone.startsWith('Europe/'));
+
+    if (isObviousMismatch) {
+        warnings.push({
+            id: 'tz-language-mismatch',
+            severity: 'warning',
+            title: 'Timezone / Language Mismatch',
+            message: `Language "${language}" with timezone "${timezone}" is an unusual combination.`,
+            affectedFields: ['timezone', 'navigatorLanguage'],
+            suggestion: 'Consider matching the timezone to a region where the language is commonly spoken.',
+        });
+    }
+
+    // Check 7: 4K display with very low RAM
+    if (screenWidth >= 3840 && memory <= 4) {
+        warnings.push({
+            id: 'screen-memory-mismatch',
+            severity: 'warning',
+            title: '4K Display with Low RAM',
+            message: '4K displays are typically used on systems with more than 4GB RAM.',
+            affectedFields: ['screenResolution', 'deviceMemory'],
+            suggestion: 'Consider using a lower resolution or higher memory setting.',
+        });
+    }
+
+    return warnings;
+}
+
+/**
+ * Update the coherence banner UI based on validation results
+ */
+function updateCoherenceBanner(): void {
+    const warnings = validateProfileCoherence();
+
+    if (!coherenceBanner) return;
+
+    const errorCount = warnings.filter(w => w.severity === 'error').length;
+    const warningCount = warnings.filter(w => w.severity === 'warning').length;
+
+    // Hide banner if no warnings
+    if (warnings.length === 0) {
+        coherenceBanner.classList.add('hidden');
+        coherenceBanner.classList.remove('status-ok', 'status-warning', 'status-error', 'expanded');
+        return;
+    }
+
+    // Show banner
+    coherenceBanner.classList.remove('hidden');
+
+    // Set status class and icons
+    coherenceBanner.classList.remove('status-ok', 'status-warning', 'status-error');
+    if (errorCount > 0) {
+        coherenceBanner.classList.add('status-error');
+        if (coherenceBubbleImg) coherenceBubbleImg.src = 'icons/toolbar/error.svg';
+        if (coherenceIconImg) coherenceIconImg.src = 'icons/toolbar/error.svg';
+        if (coherenceTitle) coherenceTitle.textContent = 'Profile Issues Detected';
+    } else {
+        coherenceBanner.classList.add('status-warning');
+        if (coherenceBubbleImg) coherenceBubbleImg.src = 'icons/toolbar/warning.svg';
+        if (coherenceIconImg) coherenceIconImg.src = 'icons/toolbar/warning.svg';
+        if (coherenceTitle) coherenceTitle.textContent = 'Profile Coherence Warnings';
+    }
+
+    // Update subtitle
+    if (coherenceSubtitle) {
+        if (errorCount > 0) {
+            coherenceSubtitle.textContent = `${errorCount} critical issue${errorCount > 1 ? 's' : ''} detected. Your fingerprint may be easily identified as fake.`;
+        } else {
+            coherenceSubtitle.textContent = `${warningCount} potential inconsistenc${warningCount > 1 ? 'ies' : 'y'} found. Consider reviewing your settings.`;
+        }
+    }
+
+    // Update badges
+    if (coherenceBadges) {
+        let badgesHtml = '';
+        if (errorCount > 0) {
+            badgesHtml += `<span class="coherence-badge errors">${errorCount} Error${errorCount > 1 ? 's' : ''}</span>`;
+        }
+        if (warningCount > 0) {
+            badgesHtml += `<span class="coherence-badge warnings">${warningCount} Warning${warningCount > 1 ? 's' : ''}</span>`;
+        }
+        coherenceBadges.innerHTML = badgesHtml;
+    }
+
+    // Update warnings list
+    if (coherenceWarningsList) {
+        const warningsHtml = warnings.map(w => `
+            <div class="coherence-warning-item severity-${w.severity}">
+                <div class="warning-header">
+                    <span class="warning-severity">
+                        <img src="icons/toolbar/${w.severity === 'error' ? 'error' : 'warning'}.svg" width="16" height="16" alt="">
+                    </span>
+                    <span class="warning-title">${w.title}</span>
+                </div>
+                <div class="warning-message">${w.message}</div>
+                ${w.suggestion ? `<div class="warning-suggestion">${w.suggestion}</div>` : ''}
+                <div class="warning-fields">
+                    ${w.affectedFields.map(f => `<span class="field-tag">${f}</span>`).join('')}
+                </div>
+            </div>
+        `).join('');
+        coherenceWarningsList.innerHTML = warningsHtml;
+    }
+}
+
+// ============================================
 // Initialize
 // ============================================
 
@@ -394,6 +626,9 @@ function updateUI(): void {
     if (errorStackEnabled) errorStackEnabled.checked = currentSettings.misc?.errorStack ?? true;
     if (storageEnabled) storageEnabled.checked = currentSettings.misc?.storage ?? true;
     if (blockServiceWorkersEnabled) blockServiceWorkersEnabled.checked = currentSettings.misc?.blockServiceWorkers ?? false;
+
+    // Update profile coherence warnings
+    updateCoherenceBanner();
 }
 
 // ============================================
@@ -408,6 +643,8 @@ async function saveSettings(): Promise<void> {
             action: 'SET_SETTINGS',
             payload: currentSettings
         });
+        // Re-validate profile coherence after saving
+        updateCoherenceBanner();
     } catch (error) {
         console.error('[Kriacy] Failed to save settings:', error);
     }
