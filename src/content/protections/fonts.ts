@@ -1,13 +1,9 @@
-// Font fingerprint protection
-
 import { settings, getFingerprintSeed } from '../core/state';
 import { mulberry32, hashString } from '../core/utils';
 import { logSpoofAccess } from '../../utils/logger';
 import { createLogger } from '../../utils/system-logger';
 
 const log = createLogger('Fonts');
-
-// Common fonts that should appear as installed
 const COMMON_FONTS = [
     'arial', 'helvetica', 'times', 'times new roman', 'georgia',
     'verdana', 'courier', 'courier new', 'serif', 'sans-serif',
@@ -15,19 +11,11 @@ const COMMON_FONTS = [
     'segoe ui', 'tahoma', 'trebuchet ms', 'lucida'
 ];
 
-/**
- * Check if a font name is in the common fonts list
- */
 function isCommonFont(fontName: string): boolean {
     const fontLower = fontName.toLowerCase();
     return COMMON_FONTS.some(f => fontLower.includes(f));
 }
 
-/**
- * Initialize font fingerprint protection
- * Covers: document.fonts.check, document.fonts.ready, document.fonts.load, 
- * FontFace.load, and measureText
- */
 export function initFontProtection(): void {
     log.init('Initializing font fingerprint protection');
 

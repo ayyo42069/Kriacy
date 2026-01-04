@@ -1,13 +1,9 @@
-// Canvas fingerprint protection
-
 import { settings, getFingerprintSeed, RECT_NOISE } from '../core/state';
 import { mulberry32 } from '../core/utils';
 import { logSpoofAccess } from '../../utils/logger';
 import { createLogger } from '../../utils/system-logger';
 
 const log = createLogger('Canvas');
-
-// Use window to persist originals across script re-evaluations
 const w = window as any;
 if (!w.__KRIACY_CANVAS_ORIGINALS__) {
     w.__KRIACY_CANVAS_ORIGINALS__ = {
@@ -21,14 +17,10 @@ const originalToDataURL = w.__KRIACY_CANVAS_ORIGINALS__.toDataURL;
 const originalToBlob = w.__KRIACY_CANVAS_ORIGINALS__.toBlob;
 const originalGetImageData = w.__KRIACY_CANVAS_ORIGINALS__.getImageData;
 
-// Simple boolean flags for recursion prevention
 let inToDataURL = false;
 let inToBlob = false;
 let inGetImageData = false;
 
-/**
- * Modify pixel data in a deterministic way based on session seed
- */
 export function modifyImageData(imageData: ImageData): ImageData {
     const data = imageData.data;
     const width = imageData.width;
@@ -62,9 +54,6 @@ export function modifyImageData(imageData: ImageData): ImageData {
     return imageData;
 }
 
-/**
- * Apply noise directly to a dataURL string by modifying base64 data
- */
 function modifyDataURL(dataURL: string): string {
     const seed = getFingerprintSeed();
 
@@ -98,9 +87,6 @@ function modifyDataURL(dataURL: string): string {
     }
 }
 
-/**
- * Initialize canvas protection
- */
 export function initCanvasProtection(): void {
     log.init('Initializing canvas fingerprint protection');
     HTMLCanvasElement.prototype.toDataURL = function (type?: string, quality?: any): string {
@@ -155,9 +141,7 @@ export function initCanvasProtection(): void {
             fetch(modifiedDataURL)
                 .then(res => res.blob())
                 .then(blob => callback(blob))
-                .catch(() => {
-                    originalToBlob.call(this, callback, type, quality);
-                });
+                .catch(() => originalToBlob.call(this, callback, type, quality));
         } finally {
             inToBlob = false;
         }

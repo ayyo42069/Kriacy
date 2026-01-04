@@ -1,6 +1,3 @@
-// Media query spoofing (Critical for coherence)
-// COMPREHENSIVE VERSION - handles both matchMedia and CSS-based detection
-
 import { settings, getFingerprintSeed } from '../core/state';
 import { createLogger } from '../../utils/system-logger';
 

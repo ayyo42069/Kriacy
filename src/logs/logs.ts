@@ -1,6 +1,3 @@
-// Kriacy Logs Viewer - Cozy Modern Theme
-// Smart updates: only refresh when new logs are detected
-
 interface SpoofLogEntry {
     id: string;
     timestamp: number;

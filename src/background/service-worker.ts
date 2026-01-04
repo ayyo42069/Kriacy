@@ -1,20 +1,14 @@
-// Kriacy Background Service Worker
 import { getSettings, saveSettings } from '../utils/storage';
 import { SpoofSettings, ExtensionMessage, ExtensionResponse, DEFAULT_SETTINGS } from '../types';
 
-// Service worker initialization is logged after swLog is defined
-
-// Log storage constants
 const LOGS_STORAGE_KEY = '__kriacy_spoof_logs__';
-const MAX_LOGS = 500; // Reduced for better performance
+const MAX_LOGS = 500;
 
-// Generate unique settings key per session to prevent page scripts from easily discovering settings
-// This adds security by making the localStorage key unpredictable
 const SESSION_KEY_SUFFIX = crypto.getRandomValues(new Uint32Array(1))[0].toString(36);
 const SETTINGS_KEY = `__kriacy_${SESSION_KEY_SUFFIX}__`;
-const SETTINGS_KEY_POINTER = '__KRIACY_KEY__'; // Points to the actual key
+const SETTINGS_KEY_POINTER = '__KRIACY_KEY__';
 
-// Log storage functions with deduplication - optimized for O(n) performance
+
 async function appendLogs(entries: any[]): Promise<void> {
     try {
         const result = await chrome.storage.local.get(LOGS_STORAGE_KEY);
@@ -140,11 +134,6 @@ function swLog(level: SwLogLevel, message: string, context?: Record<string, unkn
 // Log service worker initialization
 swLog('info', 'Service worker initialized');
 
-/**
- * Validate and sanitize settings to prevent crashes or bypasses from malformed input
- * @param input The untrusted settings input
- * @returns Validated SpoofSettings object with safe defaults for missing/invalid fields
- */
 function validateSettings(input: unknown): SpoofSettings {
     if (!input || typeof input !== 'object') {
         return { ...DEFAULT_SETTINGS };

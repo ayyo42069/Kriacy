@@ -1,7 +1,3 @@
-// WebGL Canvas Fingerprint Protection
-// Protects against GPU-based 3D graphics fingerprinting
-// This covers hardware-accelerated rendering differences
-
 import { settings, getFingerprintSeed } from '../core/state';
 import { mulberry32 } from '../core/utils';
 import { logSpoofAccess } from '../../utils/logger';

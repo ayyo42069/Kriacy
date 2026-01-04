@@ -1,5 +1,3 @@
-// Geolocation spoofing
-
 import { settings } from '../core/state';
 import { createLogger } from '../../utils/system-logger';
 
@@ -9,12 +7,8 @@ const originalGetCurrentPosition = navigator.geolocation.getCurrentPosition.bind
 const originalWatchPosition = navigator.geolocation.watchPosition.bind(navigator.geolocation);
 const originalClearWatch = navigator.geolocation.clearWatch.bind(navigator.geolocation);
 
-// Track our fake watch IDs
 const fakeWatchIds = new Set<number>();
 
-/**
- * Create a fake geolocation position
- */
 function createFakePosition(): GeolocationPosition {
     return {
         coords: {
@@ -32,9 +26,6 @@ function createFakePosition(): GeolocationPosition {
     } as GeolocationPosition;
 }
 
-/**
- * Initialize geolocation spoofing
- */
 export function initGeolocationSpoofing(): void {
     log.init('Initializing geolocation spoofing', { mode: settings.geolocation?.mode });
 

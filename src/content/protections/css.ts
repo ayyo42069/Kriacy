@@ -1,5 +1,3 @@
-// CSS/System styles fingerprint protection
-
 import { settings, getFingerprintSeed } from '../core/state';
 import { mulberry32, hashString } from '../core/utils';
 import { createLogger } from '../../utils/system-logger';

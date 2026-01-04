@@ -1,14 +1,6 @@
-// Main World Script - Runs in the page's JavaScript context
-// CRITICAL: This MUST run before any page scripts to effectively spoof fingerprints
-// This file imports all modular protections and initializes them
 
-// IMPORTANT: Stealth must be imported and initialized FIRST to patch Function.prototype.toString
-// before any other protections are applied
 import { initStealthProtections, finalizeWebGLStealth } from './protections/stealth';
-
-// Worker injection must be imported early to intercept Blob/Worker before page scripts run
 import { initWorkerProtection, setGPUProfile, setWorkerSettings } from './protections/worker-inject';
-
 import { initSettingsListeners, getFingerprintSeed, settings } from './core/state';
 import { initCanvasProtection, initClientRectsProtection, initSVGRectsProtection } from './protections/canvas';
 import { initAudioProtection } from './protections/audio';

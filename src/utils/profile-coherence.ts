@@ -1,7 +1,3 @@
-// Profile Coherence Validation & Coherent Profile Generation
-// Detects and warns users about logically inconsistent fingerprint combinations
-// and provides a randomization engine that ALWAYS generates coherent profiles
-
 export interface CoherenceWarning {
     id: string;
     severity: 'warning' | 'error';
@@ -25,10 +21,6 @@ interface ProfileData {
     language?: string;
     maxTouchPoints?: number;
 }
-
-// ============================================
-// Coherent Profile Generation Engine
-// ============================================
 
 export interface CoherentProfile {
     // Platform identity
@@ -57,10 +49,6 @@ export interface CoherentProfile {
     languages: string[];
 }
 
-// ============================================
-// Platform-Specific Configuration Data
-// ============================================
-
 interface PlatformConfig {
     platform: string;
     userAgentTemplates: string[];
@@ -76,7 +64,6 @@ interface LocaleConfig {
     timezones: Array<{ timezone: string; offset: number }>;
 }
 
-// Windows Platform Configuration
 const WINDOWS_CONFIG: PlatformConfig = {
     platform: 'Win32',
     userAgentTemplates: [
@@ -136,7 +123,6 @@ const WINDOWS_CONFIG: PlatformConfig = {
     maxTouchPoints: [0, 0, 0, 0, 5, 10], // Most Windows desktops have no touch
 };
 
-// macOS Platform Configuration
 const MACOS_CONFIG: PlatformConfig = {
     platform: 'MacIntel',
     userAgentTemplates: [
@@ -185,7 +171,6 @@ const MACOS_CONFIG: PlatformConfig = {
     maxTouchPoints: [0], // Macs NEVER have touchscreens
 };
 
-// Linux Platform Configuration
 const LINUX_CONFIG: PlatformConfig = {
     platform: 'Linux x86_64',
     userAgentTemplates: [
@@ -229,7 +214,6 @@ const LINUX_CONFIG: PlatformConfig = {
     maxTouchPoints: [0, 0, 0, 0, 5, 10],
 };
 
-// Locale configurations (geographically coherent timezone + language pairs)
 const LOCALE_CONFIGS: LocaleConfig[] = [
     // North America - English
     {
@@ -365,27 +349,14 @@ const LOCALE_CONFIGS: LocaleConfig[] = [
     },
 ];
 
-// ============================================
-// Coherent Randomization Engine
-// ============================================
-
-/**
- * Helper to pick random item from array
- */
 function pickRandom<T>(arr: T[]): T {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-/**
- * Helper to pick random item from array with seeded random
- */
 function pickRandomSeeded<T>(arr: T[], random: () => number): T {
     return arr[Math.floor(random() * arr.length)];
 }
 
-/**
- * Get hardware specs appropriate for GPU tier
- */
 function getCompatibleHardware(config: PlatformConfig, gpuTier: 'integrated' | 'mid' | 'high'): { cores: number; memory: number } {
     const specs = config.hardwareSpecs;
 
@@ -402,9 +373,6 @@ function getCompatibleHardware(config: PlatformConfig, gpuTier: 'integrated' | '
     }
 }
 
-/**
- * Get screen config appropriate for GPU tier  
- */
 function getCompatibleScreen(config: PlatformConfig, gpuTier: 'integrated' | 'mid' | 'high'): { width: number; height: number; pixelRatio: number; colorDepth: number } {
     const screens = config.screenConfigs;
 
@@ -421,12 +389,7 @@ function getCompatibleScreen(config: PlatformConfig, gpuTier: 'integrated' | 'mi
     }
 }
 
-/**
- * Generate a completely coherent fingerprint profile
- * All values are guaranteed to be logically consistent
- */
 export function generateCoherentProfile(platformType?: 'windows' | 'macos' | 'linux'): CoherentProfile {
-    // Step 1: Choose platform
     const platformConfigs: Record<string, PlatformConfig> = {
         windows: WINDOWS_CONFIG,
         macos: MACOS_CONFIG,
@@ -437,23 +400,17 @@ export function generateCoherentProfile(platformType?: 'windows' | 'macos' | 'li
     const selectedPlatformType = platformType || pickRandom(platforms);
     const config = platformConfigs[selectedPlatformType];
 
-    // Step 2: Choose GPU (determines hardware tier)
     const gpu = pickRandom(config.gpuProfiles);
 
-    // Step 3: Get hardware specs compatible with GPU tier
     const hardware = getCompatibleHardware(config, gpu.tier);
 
-    // Step 4: Get screen config compatible with GPU tier
     const screen = getCompatibleScreen(config, gpu.tier);
 
-    // Step 5: Get random locale (timezone + language that match each other)
     const locale = pickRandom(LOCALE_CONFIGS);
     const tzConfig = pickRandom(locale.timezones);
 
-    // Step 6: Get user agent
     const userAgent = pickRandom(config.userAgentTemplates);
 
-    // Step 7: Get touch points (platform-appropriate)
     const maxTouchPoints = pickRandom(config.maxTouchPoints);
 
     return {
@@ -475,9 +432,6 @@ export function generateCoherentProfile(platformType?: 'windows' | 'macos' | 'li
     };
 }
 
-/**
- * Generate a coherent profile using a seed for reproducibility
- */
 export function generateSeededCoherentProfile(seed: number, platformType?: 'windows' | 'macos' | 'linux'): CoherentProfile {
     // Create seeded random function
     const seededRandom = ((): () => number => {
@@ -488,7 +442,6 @@ export function generateSeededCoherentProfile(seed: number, platformType?: 'wind
         };
     })();
 
-    // Platform selection
     const platformConfigs: Record<string, PlatformConfig> = {
         windows: WINDOWS_CONFIG,
         macos: MACOS_CONFIG,
@@ -499,10 +452,8 @@ export function generateSeededCoherentProfile(seed: number, platformType?: 'wind
     const selectedPlatformType = platformType || pickRandomSeeded(platforms, seededRandom);
     const config = platformConfigs[selectedPlatformType];
 
-    // GPU selection
     const gpu = pickRandomSeeded(config.gpuProfiles, seededRandom);
 
-    // Hardware compatible with GPU tier
     const getCompatibleHardwareSeeded = (tier: 'integrated' | 'mid' | 'high') => {
         const specs = config.hardwareSpecs;
         switch (tier) {
@@ -515,7 +466,6 @@ export function generateSeededCoherentProfile(seed: number, platformType?: 'wind
         }
     };
 
-    // Screen compatible with GPU tier
     const getCompatibleScreenSeeded = (tier: 'integrated' | 'mid' | 'high') => {
         const screens = config.screenConfigs;
         switch (tier) {
@@ -554,9 +504,6 @@ export function generateSeededCoherentProfile(seed: number, platformType?: 'wind
     };
 }
 
-/**
- * Convert CoherentProfile to settings format used by the extension
- */
 export function coherentProfileToSettings(profile: CoherentProfile, existingSettings?: any): any {
     return {
         ...existingSettings,

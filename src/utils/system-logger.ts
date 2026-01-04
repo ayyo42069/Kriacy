@@ -1,18 +1,14 @@
-// Kriacy System Logger
-// Internal extension logging system that stores logs instead of using console.log
-// This keeps Chrome DevTools clean and provides a comprehensive log viewer
-
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 export type LogCategory =
-    | 'init'       // Initialization messages
-    | 'settings'   // Settings changes
-    | 'injection'  // Script injection
-    | 'protection' // Protection module activity
-    | 'network'    // Network interception
-    | 'storage'    // Storage operations
-    | 'ui'         // UI/Popup/Options activity
-    | 'worker'     // Web Worker/Service Worker
-    | 'general';   // General messages
+    | 'init'
+    | 'settings'
+    | 'injection'
+    | 'protection'
+    | 'network'
+    | 'storage'
+    | 'ui'
+    | 'worker'
+    | 'general';
 
 export interface SystemLogEntry {
     id: string;
@@ -25,13 +21,12 @@ export interface SystemLogEntry {
     context?: Record<string, unknown>;
 }
 
-// Configuration
 const LOG_CONFIG = {
-    FLUSH_INTERVAL: 3000, // Flush every 3 seconds
-    MAX_BUFFER_SIZE: 50,  // Max entries before force flush
-    MAX_DETAIL_LENGTH: 500, // Truncate details to this length
+    FLUSH_INTERVAL: 3000,
+    MAX_BUFFER_SIZE: 50,
+    MAX_DETAIL_LENGTH: 500,
     ENABLED_LEVELS: ['debug', 'info', 'warn', 'error'] as LogLevel[],
-    CONSOLE_MIRROR: false, // Set to true to also log to console (for debugging the logger itself)
+    CONSOLE_MIRROR: false,
 };
 
 // Buffer for batch processing
@@ -39,32 +34,23 @@ let logBuffer: SystemLogEntry[] = [];
 let flushScheduled = false;
 let isProcessing = false;
 
-// Use native setTimeout reference
 const nativeSetTimeout = typeof window !== 'undefined'
     ? window.setTimeout.bind(window)
     : globalThis.setTimeout?.bind(globalThis);
 
-/**
- * Generate a unique ID for log entries
- */
 function generateId(): string {
-    const timestamp = Date.now().toString(36);
-    const random = Math.random().toString(36).substring(2, 8);
-    return `sys-${timestamp}-${random}`;
+    const ts = Date.now().toString(36);
+    const rand = Math.random().toString(36).substring(2, 8);
+    return `sys-${ts}-${rand}`;
 }
 
-/**
- * Truncate string to max length
- */
-function truncateString(str: string | undefined, maxLen: number): string | undefined {
+function truncate(str: string | undefined, maxLen: number): string | undefined {
     if (!str) return undefined;
     if (str.length <= maxLen) return str;
     return str.substring(0, maxLen) + '...';
 }
 
-/**
- * Format context object for logging
- */
+
 function formatContext(context: Record<string, unknown> | undefined): string | undefined {
     if (!context) return undefined;
     try {
@@ -88,9 +74,7 @@ function formatContext(context: Record<string, unknown> | undefined): string | u
     }
 }
 
-/**
- * Core logging function
- */
+
 function log(
     level: LogLevel,
     category: LogCategory,
@@ -98,10 +82,8 @@ function log(
     message: string,
     context?: Record<string, unknown>
 ): void {
-    // Skip if level not enabled
     if (!LOG_CONFIG.ENABLED_LEVELS.includes(level)) return;
 
-    // Guard against recursion
     if (isProcessing) return;
     isProcessing = true;
 
@@ -112,7 +94,7 @@ function log(
             level,
             category,
             module,
-            message: truncateString(message, LOG_CONFIG.MAX_DETAIL_LENGTH) || '',
+            message: truncate(message, LOG_CONFIG.MAX_DETAIL_LENGTH) || '',
             details: formatContext(context),
             context,
         };

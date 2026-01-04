@@ -1,16 +1,11 @@
-// WebGL fingerprint protection
-
 import { settings, getFingerprintSeed } from '../core/state';
 import { mulberry32 } from '../core/utils';
 import { setGPUProfile } from './worker-inject';
 import { createLogger } from '../../utils/system-logger';
 
 const log = createLogger('WebGL');
-
-// Global guard to prevent double-patching
 const w = window as any;
 
-// Store originals ONCE at module load time (before any page code can run)
 if (!w.__KRIACY_WEBGL_ORIGINALS__) {
     w.__KRIACY_WEBGL_ORIGINALS__ = {
         getParameter: WebGLRenderingContext.prototype.getParameter,
@@ -27,44 +22,29 @@ if (!w.__KRIACY_WEBGL_ORIGINALS__) {
 }
 
 const originals = w.__KRIACY_WEBGL_ORIGINALS__;
-
-// WebGL parameters that can have noise applied
 const NOISEABLE_PARAMS = [3379, 34076, 34024, 35661, 35660, 34930, 3386, 36347, 36348];
 
-/**
- * Get the noise offset for a WebGL parameter based on current seed
- * This is computed dynamically so it updates when the seed changes (randomization)
- */
+
 function getWebGLParamOffset(param: number): number | undefined {
     const paramIndex = NOISEABLE_PARAMS.indexOf(param);
     if (paramIndex === -1) return undefined;
 
-    // Use current seed to generate deterministic but unique offset for this param
     const seed = getFingerprintSeed();
     const paramRandom = mulberry32(seed ^ (0xDEADBEEF + param));
-    return Math.floor(paramRandom() * 4) - 2; // -2 to +1
+    return Math.floor(paramRandom() * 4) - 2;
 }
 
-/**
- * Patch a WebGL context prototype with fingerprint protection
- */
 function patchWebGLContext(prototype: any, contextName: string) {
-    // Get the original methods from the prototype being patched (NOT from stored globals)
-    // This is critical for iframe support - each window has its own prototypes
     const originalGetParameter = prototype.getParameter;
     const originalGetExtension = prototype.getExtension;
     const originalGetSupportedExtensions = prototype.getSupportedExtensions;
     const originalGetShaderPrecisionFormat = prototype.getShaderPrecisionFormat;
     const originalGetError = prototype.getError;
 
-    // Skip if already patched (check for our marker)
     if (prototype.__KRIACY_PATCHED__) return;
     prototype.__KRIACY_PATCHED__ = true;
 
-    // Comprehensive list of extension-dependent parameters
-    // If queried without the extension enabled, WebGL logs INVALID_ENUM
     const extensionDependentParams: { [key: number]: string } = {
-        // WEBGL_debug_renderer_info (0x9245 = 37445, 0x9246 = 37446)
         0x9245: 'WEBGL_debug_renderer_info', // UNMASKED_VENDOR_WEBGL
         0x9246: 'WEBGL_debug_renderer_info', // UNMASKED_RENDERER_WEBGL
 

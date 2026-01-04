@@ -1,6 +1,3 @@
-// Content script - runs in ISOLATED world
-// Responsible for injecting the main-world script BEFORE any page scripts
-
 (function () {
     'use strict';
 

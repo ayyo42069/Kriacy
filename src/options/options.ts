@@ -1,5 +1,3 @@
-// Kriacy Options Page Script
-
 interface SpoofSettings {
     enabled: boolean;
     profile: 'minimal' | 'balanced' | 'aggressive' | 'custom';
@@ -65,34 +63,21 @@ interface SpoofSettings {
 // Security Utilities
 // ============================================
 
-/**
- * Generate a cryptographically secure random number between 0 and 1
- * Used instead of Math.random() for security-sensitive operations
- */
 function secureRandom(): number {
+
     const array = new Uint32Array(1);
     crypto.getRandomValues(array);
     return array[0] / 0xFFFFFFFF;
 }
 
-/**
- * Generate a cryptographically secure random integer
- * @param max Maximum value (exclusive)
- */
 function secureRandomInt(max: number): number {
     return Math.floor(secureRandom() * max);
 }
 
-/**
- * Pick a random element from an array using secure randomness
- */
 function secureRandomPick<T>(array: T[]): T {
     return array[secureRandomInt(array.length)];
 }
 
-/**
- * Escape HTML to prevent XSS attacks
- */
 function escapeHtml(text: string): string {
     const div = document.createElement('div');
     div.textContent = text;

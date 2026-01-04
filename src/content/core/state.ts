@@ -1,5 +1,3 @@
-// Shared state management for Kriacy fingerprint protection
-
 import { KriacySettings } from './types';
 import { hashString, mulberry32 } from './utils';
 import { createLogger } from '../../utils/system-logger';

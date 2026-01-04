@@ -1,9 +1,4 @@
-// Fingerprint profiles - predefined browser/OS combinations
 import { FingerprintProfile, SpoofSettings } from '../types';
-
-// ============================================
-// Windows Desktop Profiles
-// ============================================
 
 const WINDOWS_PROFILES: FingerprintProfile[] = [
     // Windows 10 + Chrome variants
@@ -292,10 +287,6 @@ const WINDOWS_PROFILES: FingerprintProfile[] = [
     },
 ];
 
-// ============================================
-// macOS Desktop Profiles
-// ============================================
-
 const MACOS_PROFILES: FingerprintProfile[] = [
     {
         id: 'macos-chrome-m1',
@@ -419,10 +410,6 @@ const MACOS_PROFILES: FingerprintProfile[] = [
     },
 ];
 
-// ============================================
-// Linux Desktop Profiles  
-// ============================================
-
 const LINUX_PROFILES: FingerprintProfile[] = [
     {
         id: 'linux-chrome-intel',
@@ -505,10 +492,6 @@ const LINUX_PROFILES: FingerprintProfile[] = [
         maxTouchPoints: 0
     },
 ];
-
-// ============================================
-// Mobile Profiles - Android
-// ============================================
 
 const ANDROID_PROFILES: FingerprintProfile[] = [
     {
@@ -633,10 +616,6 @@ const ANDROID_PROFILES: FingerprintProfile[] = [
     },
 ];
 
-// ============================================
-// Mobile Profiles - iOS
-// ============================================
-
 const IOS_PROFILES: FingerprintProfile[] = [
     {
         id: 'iphone-safari-15pro',
@@ -740,10 +719,6 @@ const IOS_PROFILES: FingerprintProfile[] = [
     },
 ];
 
-// ============================================
-// Combined Profiles Export
-// ============================================
-
 export const FINGERPRINT_PROFILES: FingerprintProfile[] = [
     ...WINDOWS_PROFILES,
     ...MACOS_PROFILES,
@@ -752,7 +727,6 @@ export const FINGERPRINT_PROFILES: FingerprintProfile[] = [
     ...IOS_PROFILES,
 ];
 
-// Convenience getters for specific categories
 export const getWindowsProfiles = () => WINDOWS_PROFILES;
 export const getMacOSProfiles = () => MACOS_PROFILES;
 export const getLinuxProfiles = () => LINUX_PROFILES;
@@ -762,24 +736,15 @@ export const getIOSProfiles = () => IOS_PROFILES;
 export const getDesktopProfiles = () => [...WINDOWS_PROFILES, ...MACOS_PROFILES, ...LINUX_PROFILES];
 export const getMobileProfiles = () => [...ANDROID_PROFILES, ...IOS_PROFILES];
 
-/**
- * Get a profile by ID
- */
 export function getProfileById(id: string): FingerprintProfile | undefined {
     return FINGERPRINT_PROFILES.find(p => p.id === id);
 }
 
-/**
- * Get a random profile from all profiles
- */
 export function getRandomProfile(): FingerprintProfile {
     const index = Math.floor(Math.random() * FINGERPRINT_PROFILES.length);
     return FINGERPRINT_PROFILES[index];
 }
 
-/**
- * Get a random profile from a specific category
- */
 export function getRandomProfileFromCategory(category: 'windows' | 'macos' | 'linux' | 'android' | 'ios' | 'desktop' | 'mobile'): FingerprintProfile {
     let profiles: FingerprintProfile[];
 
@@ -798,17 +763,6 @@ export function getRandomProfileFromCategory(category: 'windows' | 'macos' | 'li
     return profiles[index];
 }
 
-/**
- * Get a profile using user settings as defaults
- * 
- * This ensures consistency: if the user has configured specific settings in the options,
- * those settings will be used instead of the profile defaults. This way, the user's
- * customizations are preserved across the extension.
- * 
- * @param settings - Current user settings from storage
- * @param baseProfile - Optional base profile to start from. If not provided, uses first profile.
- * @returns A fingerprint profile with user settings applied where available
- */
 export function getProfileWithUserDefaults(settings?: SpoofSettings | null, baseProfile?: FingerprintProfile): FingerprintProfile {
     // Start with base profile or the first Windows profile as default
     const base = baseProfile || FINGERPRINT_PROFILES[0];

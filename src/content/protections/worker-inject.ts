@@ -1,6 +1,3 @@
-// Worker script injection for consistent fingerprinting across main thread and Workers
-// Addresses CreepJS hasBadWebGL detection by ensuring WebGL values match in Workers
-
 import { createLogger } from '../../utils/system-logger';
 
 const log = createLogger('WorkerInject');
@@ -11,19 +8,12 @@ const OriginalBlob = w.Blob;
 const OriginalWorker = w.Worker;
 const OriginalSharedWorker = w.SharedWorker;
 const OriginalURL = w.URL || w.webkitURL;
-
-// Prevent double initialization
 if (w.__KRIACY_WORKER_INJECT_INIT__) {
     // Already initialized
 } else {
     w.__KRIACY_WORKER_INJECT_INIT__ = true;
 }
 
-/**
- * Get the spoofing code to inject into worker scripts
- * This code runs at the start of every Worker to ensure consistent fingerprinting
- * IMPORTANT: This generates code dynamically each time to get the latest settings
- */
 function getWorkerSpoofCode(): string {
     // Get GPU profile from stored global (set by webgl.ts or at init time)
     const gpuProfile = w.__KRIACY_GPU_PROFILE__ || {};
@@ -136,9 +126,6 @@ function getWorkerSpoofCode(): string {
 `;
 }
 
-/**
- * Intercept Blob creation to inject spoofing code into JavaScript blobs
- */
 export function initBlobInterception(): void {
     log.init('Initializing Blob interception');
     if (!OriginalBlob) return;
@@ -176,10 +163,6 @@ export function initBlobInterception(): void {
     }
 }
 
-/**
- * Create a wrapper script that injects our code before the original script
- * For module workers, we use dynamic import instead of importScripts
- */
 function createWrapperBlobUrl(originalUrl: string, isModule: boolean = false): string {
     let wrapperScript: string;
 
@@ -201,12 +184,6 @@ importScripts('${originalUrl}');
     return OriginalURL.createObjectURL(blob);
 }
 
-/**
- * Check if blob URLs are likely blocked by CSP for workers
- * We detect this by checking the CSP meta tags or by caching previous failures
- * NOTE: CSP headers are stripped at the network level via declarativeNetRequest rules,
- * so this is primarily a fallback for meta tag-based CSP
- */
 let blobWorkersBlocked = false;
 
 function checkCSPForBlobWorkers(): boolean {
@@ -233,9 +210,6 @@ function checkCSPForBlobWorkers(): boolean {
     return false;
 }
 
-/**
- * Intercept Worker creation to inject spoofing code
- */
 export function initWorkerInterception(): void {
     log.init('Initializing Worker interception');
     if (!OriginalWorker) return;
@@ -316,10 +290,6 @@ export function initWorkerInterception(): void {
     Object.setPrototypeOf(w.Worker, OriginalWorker);
 }
 
-/**
- * Intercept SharedWorker creation to inject spoofing code
- * CreepJS also uses SharedWorkers
- */
 export function initSharedWorkerInterception(): void {
     log.init('Initializing SharedWorker interception');
     if (!OriginalSharedWorker) return;
@@ -396,9 +366,6 @@ export function initSharedWorkerInterception(): void {
     Object.setPrototypeOf(w.SharedWorker, OriginalSharedWorker);
 }
 
-/**
- * Store GPU profile globally so worker injection can access it
- */
 export function setGPUProfile(vendor: string, renderer: string): void {
     w.__KRIACY_GPU_PROFILE__ = {
         vendor,
@@ -406,9 +373,6 @@ export function setGPUProfile(vendor: string, renderer: string): void {
     };
 }
 
-/**
- * Store navigator settings globally so worker injection can access them
- */
 export function setWorkerSettings(workerSettings: {
     navigatorProtection?: boolean;
     hardwareConcurrency?: number;
@@ -424,10 +388,6 @@ export function setWorkerSettings(workerSettings: {
     };
 }
 
-/**
- * Initialize all worker protection
- * MUST be called AFTER stealth but BEFORE other protections
- */
 export function initWorkerProtection(): void {
     if (w.__KRIACY_WORKER_PROTECTION_ACTIVE__) return;
     w.__KRIACY_WORKER_PROTECTION_ACTIVE__ = true;
@@ -439,9 +399,6 @@ export function initWorkerProtection(): void {
     initSharedWorkerInterception();
 }
 
-/**
- * Set GPU profile from settings - called after settings are loaded
- */
 export function updateGPUProfileFromSettings(vendor: string, renderer: string): void {
     setGPUProfile(vendor, renderer);
 }

@@ -1,62 +1,32 @@
-// Stealth protection - Makes spoofed APIs undetectable
-// Handles: hasIframeProxy, hasHighChromeIndex, hasBadChromeRuntime, hasToStringProxy, hasBadWebGL
-// 
-// CreepJS Detection Methods (from lies/index.ts):
-// - 'failed toString': Function.prototype.toString must return native format
-// - 'failed descriptor': No 'arguments', 'caller', 'prototype', 'toString' descriptors
-// - 'failed own property': hasOwnProperty for above must be false
-// - 'failed descriptor keys': Object.keys(descriptors) must equal ['length','name']
-// - 'failed own property names': Object.getOwnPropertyNames must equal ['length','name']
-// - 'failed own keys names': Reflect.ownKeys must equal ['length','name']
-
 import { createLogger } from '../../utils/system-logger';
 
 const log = createLogger('Stealth');
 const w = window as any;
 
-// Prevent double initialization
-if (w.__KRIACY_STEALTH_INIT__) {
-    // Already initialized - just export functions
-} else {
+if (!w.__KRIACY_STEALTH_INIT__) {
     w.__KRIACY_STEALTH_INIT__ = true;
 }
 
-/**
- * Store original Function.prototype.toString before any modifications
- */
+
 const originalFunctionToString = w.__KRIACY_ORIGINAL_TOSTRING__ || Function.prototype.toString;
 if (!w.__KRIACY_ORIGINAL_TOSTRING__) {
     w.__KRIACY_ORIGINAL_TOSTRING__ = originalFunctionToString;
 }
 
-/**
- * WeakMap to store native string representations for spoofed functions
- */
+
 const nativeFunctionMap: WeakMap<Function, string> = w.__KRIACY_NATIVE_MAP__ || new WeakMap();
 if (!w.__KRIACY_NATIVE_MAP__) {
     w.__KRIACY_NATIVE_MAP__ = nativeFunctionMap;
 }
 
-/**
- * Get the native string representation for a function name
- * Supports both regular functions and getter functions
- */
 function getNativeString(name: string): string {
     return `function ${name}() { [native code] }`;
 }
 
-/**
- * Get the native string representation for a getter function
- * CreepJS checks that getters return "function get propName() { [native code] }"
- */
 function getNativeGetterString(propName: string): string {
     return `function get ${propName}() { [native code] }`;
 }
 
-/**
- * Validate that a function appears native (no Proxy detection)
- * Used for testing/debugging
- */
 export function validateNativeFunction(fn: Function): boolean {
     try {
         // Check descriptor keys - must be exactly 'length,name'
@@ -78,23 +48,15 @@ export function validateNativeFunction(fn: Function): boolean {
     }
 }
 
-/**
- * Make a function appear completely native:
- * 1. Patch toString to return native code
- * 2. Remove prototype property
- * 3. Ensure only 'length' and 'name' as own properties
- */
 export function makeNative(fn: Function, name: string): void {
     try {
         const nativeStr = getNativeString(name);
         nativeFunctionMap.set(fn, nativeStr);
 
-        // Delete prototype property - native methods don't have it
         if (fn.hasOwnProperty('prototype')) {
             delete (fn as any).prototype;
         }
 
-        // Ensure proper length and name (non-configurable for real native look)
         try {
             Object.defineProperty(fn, 'length', {
                 value: (fn as any).length || 0,
@@ -113,7 +75,6 @@ export function makeNative(fn: Function, name: string): void {
             });
         } catch (e) { }
 
-        // Remove any extra own properties that would reveal tampering
         const ownProps = Object.getOwnPropertyNames(fn);
         for (const prop of ownProps) {
             if (prop !== 'length' && prop !== 'name') {
@@ -122,9 +83,7 @@ export function makeNative(fn: Function, name: string): void {
                 } catch (e) { }
             }
         }
-    } catch (e) {
-        // Silently fail
-    }
+    } catch (e) { }
 }
 
 /**

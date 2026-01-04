@@ -1,22 +1,14 @@
-// Timezone spoofing - Comprehensive implementation
-// Overrides all Date methods and Intl APIs that can leak timezone information
-// Also intercepts Date constructor to prevent timezone computation attacks
-
 import { settings } from '../core/state';
 import { logSpoofAccess } from '../../utils/logger';
 import { createLogger } from '../../utils/system-logger';
 
 const log = createLogger('Timezone');
 
-// Guard against recursion
 let isHandlingTimezone = false;
 
-// Store original functions BEFORE any modifications
 const OriginalDate = Date;
 const OriginalDatePrototype = Date.prototype;
 const OriginalIntlDateTimeFormat = Intl.DateTimeFormat;
-
-// Store original prototype methods
 const originalGetTimezoneOffset = OriginalDatePrototype.getTimezoneOffset;
 const originalToString = OriginalDatePrototype.toString;
 const originalToDateString = OriginalDatePrototype.toDateString;
@@ -41,13 +33,8 @@ const originalSetDate = OriginalDatePrototype.setDate;
 const originalSetMonth = OriginalDatePrototype.setMonth;
 const originalSetFullYear = OriginalDatePrototype.setFullYear;
 
-// Store original Function.prototype.toString
 const originalFunctionToString = Function.prototype.toString;
-
-// Use a Symbol to mark spoofed functions and store their native string
 const NATIVE_STRING_SYMBOL = Symbol.for('__kriacy_native_string__');
-
-// Override Function.prototype.toString to intercept our spoofed functions
 Function.prototype.toString = function (this: Function): string {
     // Check if this function has been marked as spoofed
     const nativeString = (this as any)[NATIVE_STRING_SYMBOL];
@@ -57,13 +44,8 @@ Function.prototype.toString = function (this: Function): string {
     return originalFunctionToString.call(this);
 };
 
-// Make Function.prototype.toString look native too
 (Function.prototype.toString as any)[NATIVE_STRING_SYMBOL] = 'function toString() { [native code] }';
 
-/**
- * Make a function appear as native code when toString() is called
- * This prevents detection via function source inspection
- */
 function makeNative(fn: Function, name: string): void {
     if (!fn) return;
 

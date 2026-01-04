@@ -1,14 +1,9 @@
-// Miscellaneous fingerprint protections
-
 import { settings, getFingerprintSeed } from '../core/state';
 import { mulberry32, hashString } from '../core/utils';
 import { createLogger } from '../../utils/system-logger';
 
 const log = createLogger('Misc');
 
-/**
- * Initialize performance API timing protection
- */
 export function initPerformanceProtection(): void {
     const originalPerformanceNow = performance.now.bind(performance);
     performance.now = function (): number {
@@ -52,9 +47,6 @@ export function initPerformanceProtection(): void {
     }
 }
 
-/**
- * Initialize Bluetooth API blocking
- */
 export function initBluetoothBlocking(): void {
     if ('bluetooth' in navigator) {
         try {
@@ -85,9 +77,6 @@ export function initBluetoothBlocking(): void {
     }
 }
 
-/**
- * Initialize gamepad API spoofing
- */
 export function initGamepadSpoofing(): void {
     if ('getGamepads' in navigator) {
         const originalGetGamepads = navigator.getGamepads.bind(navigator);
@@ -101,11 +90,6 @@ export function initGamepadSpoofing(): void {
     }
 }
 
-/**
- * Standard US QWERTY keyboard layout mapping
- * Maps KeyboardEvent.code values to their expected key values
- * This is the most common layout and used as a baseline for spoofing
- */
 const US_QWERTY_LAYOUT: Record<string, { normal: string; shift?: string; altGr?: string }> = {
     // Letter keys
     'KeyA': { normal: 'a', shift: 'A' },
@@ -194,9 +178,6 @@ const US_QWERTY_LAYOUT: Record<string, { normal: string; shift?: string; altGr?:
     'NumpadDecimal': { normal: '.' }, 'NumpadEnter': { normal: 'Enter' },
 };
 
-/**
- * Get the expected key value for a given code based on US QWERTY layout
- */
 function getExpectedKeyForCode(code: string, shiftKey: boolean, altKey: boolean): string | null {
     const mapping = US_QWERTY_LAYOUT[code];
     if (!mapping) return null;
@@ -210,13 +191,6 @@ function getExpectedKeyForCode(code: string, shiftKey: boolean, altKey: boolean)
     return mapping.normal;
 }
 
-/**
- * Initialize keyboard layout fingerprinting protection
- * This is protection covers:
- * 1. navigator.keyboard.getLayoutMap() - Returns US QWERTY layout
- * 2. KeyboardEvent.code and KeyboardEvent.key properties - Normalized during typing
- * 3. navigator.keyboard.lock() and unlock() - Spoofed methods
- */
 export function initKeyboardSpoofing(): void {
     // ========================================
     // 1. Spoof navigator.keyboard.getLayoutMap()

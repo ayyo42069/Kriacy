@@ -1,5 +1,3 @@
-// Kriacy Popup Script
-
 interface SpoofSettings {
     enabled: boolean;
     profile: 'minimal' | 'balanced' | 'aggressive' | 'custom';

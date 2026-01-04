@@ -1,13 +1,9 @@
-// Navigator and UserAgentData spoofing
-
 import { settings, getFingerprintSeed } from '../core/state';
 import { mulberry32 } from '../core/utils';
 import { logSpoofAccess } from '../../utils/logger';
 import { createLogger } from '../../utils/system-logger';
 
 const log = createLogger('Navigator');
-
-// Capture original navigator values at load time to avoid illegal invocation
 const originalNavigatorValues: Record<string, any> = {};
 try {
     const navProps = ['hardwareConcurrency', 'deviceMemory', 'platform', 'language', 'languages', 'maxTouchPoints'];
@@ -27,7 +23,6 @@ try {
     // Use defaults
 }
 
-// Provide fallback defaults
 const navigatorDefaults: Record<string, any> = {
     hardwareConcurrency: 4,
     deviceMemory: 8,
@@ -37,9 +32,7 @@ const navigatorDefaults: Record<string, any> = {
     maxTouchPoints: 0,
 };
 
-/**
- * Initialize navigator spoofing
- */
+
 export function initNavigatorSpoofing(): void {
     log.init('Initializing navigator spoofing');
     const navigatorPropsToSpoof = {
@@ -59,18 +52,15 @@ export function initNavigatorSpoofing(): void {
                         logSpoofAccess('navigator', prop);
                         return getValue();
                     }
-                    // Return the original captured value, not Navigator.prototype[prop]
                     return originalNavigatorValues[prop] ?? navigatorDefaults[prop];
                 },
                 configurable: true
             });
         } catch (e) {
-            // Property may not be configurable
         }
     });
 }
 
-// Capture original userAgentData before override
 let originalUserAgentData: any = null;
 try {
     if ('userAgentData' in navigator) {
@@ -79,13 +69,9 @@ try {
             originalUserAgentData = descriptor.get.call(navigator);
         }
     }
-} catch {
-    // Not available
-}
+} catch { }
 
-/**
- * Initialize UserAgentData spoofing
- */
+
 export function initUserAgentDataSpoofing(): void {
     log.init('Initializing UserAgentData spoofing');
     if ('userAgentData' in navigator) {

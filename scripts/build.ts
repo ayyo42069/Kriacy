@@ -1,6 +1,3 @@
-// Kriacy Build Script
-// Run with: bun run scripts/build.ts
-
 import { $ } from "bun";
 import { mkdir, cp, rm, readdir, writeFile, readFile } from "fs/promises";
 import { existsSync } from "fs";

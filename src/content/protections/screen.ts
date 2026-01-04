@@ -1,12 +1,7 @@
-// Screen and window dimension spoofing
-
 import { settings } from '../core/state';
 import { createLogger } from '../../utils/system-logger';
 
 const log = createLogger('Screen');
-
-// Capture original screen values BEFORE any overrides
-// Use Object.getOwnPropertyDescriptor to get the native getters from the prototype
 const originalScreenValues: Record<string, number> = {
     width: 1920,
     height: 1080,
@@ -36,7 +31,6 @@ try {
     // Use defaults already set
 }
 
-// Capture original devicePixelRatio using the property descriptor
 let originalDevicePixelRatio = 1;
 try {
     const dprDescriptor = Object.getOwnPropertyDescriptor(window, 'devicePixelRatio') ||
@@ -53,7 +47,6 @@ try {
     originalDevicePixelRatio = 1;
 }
 
-// Capture original window dimension values using property descriptors to avoid triggering overrides
 const originalWindowValues: Record<string, number> = {
     innerWidth: 1366,
     innerHeight: 768,
@@ -86,9 +79,6 @@ try {
     // Use defaults already set
 }
 
-/**
- * Initialize screen spoofing
- */
 export function initScreenSpoofing(): void {
     const screenPropsToSpoof: Record<string, () => number> = {
         width: () => settings.screen?.width || 1920,
@@ -174,12 +164,8 @@ export function initScreenSpoofing(): void {
     }
 }
 
-// Approximate height of browser chrome (toolbar, tabs, etc.)
 const BROWSER_CHROME_HEIGHT = 80;
 
-/**
- * Initialize window dimensions spoofing (Critical for SEC-CH coherence)
- */
 export function initWindowDimensionsSpoofing(): void {
     const windowPropsToSpoof: Record<string, () => number> = {
         innerWidth: () => settings.screen?.width || 1366,

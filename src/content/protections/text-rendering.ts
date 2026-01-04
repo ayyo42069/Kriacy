@@ -1,7 +1,3 @@
-// Text and Emoji Rendering Fingerprint Protection
-// Protects against OS-specific font rendering differences
-// This module normalizes text rendering settings and adds noise to measureText
-
 import { settings, getFingerprintSeed } from '../core/state';
 import { mulberry32, hashString } from '../core/utils';
 import { logSpoofAccess } from '../../utils/logger';
